@@ -120,10 +120,13 @@ export default function DonatePage() {
           <h3 style={{ color: '#fff', fontWeight: 900, fontSize: '1.2rem', marginBottom: 10 }}>Хочешь партнёрство или интеграцию?</h3>
           <p style={{ color: '#c4b5fd', marginBottom: 24, fontSize: '0.95rem' }}>Обсудим условия, поставим ранний доступ к API и поможем интегрировать верификацию в твой продукт</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="mailto:hello@homosapience.org" style={{ padding: '12px 28px', background: '#fff', color: '#7c3aed', fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
+            <a href="https://t.me/aptogon" target="_blank" rel="noopener noreferrer" style={{ padding: '12px 28px', background: '#fff', color: '#0088cc', fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
+              ✈️ Telegram @aptogon
+            </a>
+            <a href="mailto:hello@homosapience.org" style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.1)', color: '#c4b5fd', fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
               📩 hello@homosapience.org
             </a>
-            <Link href="/" style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.1)', color: '#c4b5fd', fontWeight: 600, borderRadius: 12, textDecoration: 'none' }}>
+            <Link href="/" style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.05)', color: '#c4b5fd', fontWeight: 600, borderRadius: 12, textDecoration: 'none' }}>
               ← На главную
             </Link>
           </div>

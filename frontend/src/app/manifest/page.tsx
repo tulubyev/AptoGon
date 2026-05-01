@@ -148,6 +148,9 @@ export default function ManifestPage() {
             <Link href="/verify" style={{ padding: '12px 28px', background: 'linear-gradient(135deg,#7c3aed,#2563eb)', color: '#fff', fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
               ✍️ Пройти верификацию
             </Link>
+            <a href="https://t.me/aptogon" target="_blank" rel="noopener noreferrer" style={{ padding: '12px 28px', background: 'rgba(0,136,204,0.15)', color: '#38bdf8', fontWeight: 700, borderRadius: 12, textDecoration: 'none', border: '1px solid rgba(0,136,204,0.3)' }}>
+              ✈️ Telegram
+            </a>
             <Link href="/developers" style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', fontWeight: 600, borderRadius: 12, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>
               ⚡ Developers
             </Link>

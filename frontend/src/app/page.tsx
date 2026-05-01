@@ -229,6 +229,7 @@ export default function Home() {
           <Link href="/manifest" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Manifest</Link>
           <Link href="/developers" style={{ color: '#6b7280', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Developers</Link>
           <Link href="/donate" style={{ color: '#6b7280', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Donate</Link>
+          <a href="https://t.me/aptogon" target="_blank" rel="noopener" style={{ color: '#0088cc', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>✈️ Telegram</a>
           <a href="https://homosapience.org" target="_blank" rel="noopener" style={{ color: '#6b7280', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>homosapience.org</a>
         </div>
         <p style={{ fontSize: 13, color: '#94a3b8' }}>APTOGON v0.2.0 · Human Firewall Infrastructure · Open Source</p>
