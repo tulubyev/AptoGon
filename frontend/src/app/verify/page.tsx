@@ -56,16 +56,17 @@ export default function VerifyPage() {
         // Save in HSI browser extension format
         localStorage.setItem('hsi_did', data.did)
         localStorage.setItem('hsi_credential', JSON.stringify({
+          ...(data.credential ?? {}),
           issuanceDate: new Date().toISOString(),
           expirationDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
           credentialSubject: {
+            ...(data.credential?.credentialSubject ?? {}),
             id: data.did,
             isHuman: true,
             confidence: data.confidence,
             expressionProof: data.expression_proof,
             txHash: data.tx_hash,
           },
-          ...(data.credential ?? {}),
         }))
         setStage('success')
       } else {
