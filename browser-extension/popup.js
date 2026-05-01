@@ -112,11 +112,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <button class="btn btn-primary" id="btn-verify">✍️ Пройти верификацию</button>
+      <button class="btn btn-secondary" id="btn-sync">🔄 Синхронизировать с вкладки</button>
     `;
 
     document.getElementById('btn-verify').addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'OPEN_VERIFY_PAGE' });
       window.close();
+    });
+
+    document.getElementById('btn-sync').addEventListener('click', () => {
+      syncFromActiveTab();
     });
   }
 
