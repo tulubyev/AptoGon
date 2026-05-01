@@ -1,5 +1,3 @@
-version: "3.9"
-
 # APTOGON v0.2.0 — единый docker-compose
 # Запуск: docker compose up
 # Docs:   http://localhost:8000/docs

@@ -282,7 +282,7 @@ Return ONLY valid JSON with no markdown fences."""
         prompt = self._build_prompt(pattern)
 
         response = await self.client.chat(
-            model=GonkaModel.EXPRESSION_ANALYSIS,
+            model=GonkaModel.FAST,
             messages=[
                 {"role": "system", "content": self.SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
@@ -290,7 +290,7 @@ Return ONLY valid JSON with no markdown fences."""
             max_tokens=512,
             temperature=0.05,  # Very low — we want consistency
             task_type="expression_analysis",
-            timeout_override=5.0,
+            timeout_override=20.0,
         )
 
         latency_ms = (time.monotonic() - start) * 1000

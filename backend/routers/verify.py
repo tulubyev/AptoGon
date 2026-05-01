@@ -4,13 +4,24 @@
 POST /api/verify/expression   → анализ жеста, выдача did:key + credential
 GET  /api/verify/status       → статус по DID
 POST /api/verify/did          → создать did:key (без верификации, для тестов)
+GET  /api/verify/debug        → последние попытки верификации (для отладки)
 """
 
+import json
+import time
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
+
+_DEBUG_LOG = Path("/tmp/aptogon_attempts.jsonl")
+
+
+def _save_attempt(record: dict):
+    with open(_DEBUG_LOG, "a") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 from services.did_key import DIDKey, create_human_credential, did_hash
 
@@ -36,13 +47,17 @@ class VerifyResponse(BaseModel):
     confidence: float
     passed: bool
     reasoning: str
+    via_fallback: bool = False
+    anomalies: list[str] = []
     # did:key (новое — заменяет Ceramic)
-    did: Optional[str] = None           # did:key:z6Mk...
-    private_key_b64: Optional[str] = None  # для сохранения в localStorage
+    did: Optional[str] = None
+    private_key_b64: Optional[str] = None
     # Aptos
     expression_proof: Optional[str] = None
     tx_hash: Optional[str] = None
     credential: Optional[dict] = None
+    # Debug: pattern metrics
+    debug: Optional[dict] = None
 
 
 @router.post("/expression", response_model=VerifyResponse)
@@ -60,24 +75,54 @@ async def verify_expression(body: ExpressionRequest, request: Request):
     session_id = body.session_id or str(uuid.uuid4())
 
     # Конвертируем DTO
+    pattern_debug = {}
     try:
-        from gonka.expression_engine import TouchEvent
+        from gonka.expression_engine import TouchEvent, PatternExtractor
         events = [
             TouchEvent(x=e.x, y=e.y, pressure=e.pressure,
                       timestamp_ms=e.timestamp_ms, pause_after_ms=e.pause_after_ms)
             for e in body.events
         ]
+        # Extract pattern for debug BEFORE sending to AI
+        extractor = PatternExtractor()
+        pattern = extractor.extract(events)
+        pattern_debug = {
+            "velocity_std": round(pattern.velocity_std, 4),
+            "velocity_mean": round(pattern.velocity_mean, 4),
+            "pause_entropy": round(pattern.pause_entropy, 4),
+            "correction_count": pattern.correction_count,
+            "rhythm_irregularity": round(pattern.rhythm_irregularity, 4),
+            "total_duration_ms": pattern.total_duration_ms,
+            "point_count": pattern.point_count,
+            "possible_motor_difficulty": pattern.possible_motor_difficulty,
+        }
         result = await gonka.expression.verify(events, session_id=session_id)
-    except Exception:
-        # Gonka недоступна — stub
+    except Exception as exc:
         class _R:
             is_human = True
             confidence = 0.5
             passed = True
-            reasoning = "Gonka unavailable — stub mode"
+            reasoning = f"Gonka unavailable: {exc}"
             expression_proof = f"stub_{session_id[:8]}"
             via_fallback = True
+            anomalies = []
+            analysis_latency_ms = 0
         result = _R()
+
+    # Save debug record
+    _save_attempt({
+        "ts": time.time(),
+        "session_id": session_id,
+        "passed": result.passed,
+        "is_human": result.is_human,
+        "confidence": round(result.confidence, 3),
+        "via_fallback": result.via_fallback,
+        "reasoning": result.reasoning,
+        "anomalies": getattr(result, "anomalies", []),
+        "latency_ms": round(getattr(result, "analysis_latency_ms", 0)),
+        "pattern": pattern_debug,
+        "event_count": len(body.events),
+    })
 
     if not result.passed:
         return VerifyResponse(
@@ -85,6 +130,9 @@ async def verify_expression(body: ExpressionRequest, request: Request):
             confidence=round(result.confidence, 3),
             passed=False,
             reasoning=result.reasoning,
+            via_fallback=result.via_fallback,
+            anomalies=getattr(result, "anomalies", []),
+            debug=pattern_debug,
         )
 
     # Генерируем did:key (заменяет Ceramic — никаких нод)
@@ -114,11 +162,14 @@ async def verify_expression(body: ExpressionRequest, request: Request):
         confidence=round(result.confidence, 3),
         passed=True,
         reasoning=result.reasoning,
+        via_fallback=result.via_fallback,
+        anomalies=getattr(result, "anomalies", []),
         did=did_key.did,
-        private_key_b64=did_key.export_private(),  # фронтенд хранит в localStorage
+        private_key_b64=did_key.export_private(),
         expression_proof=result.expression_proof,
         tx_hash=tx_result.get("tx_hash"),
         credential=signed_credential,
+        debug=pattern_debug,
     )
 
 
@@ -133,6 +184,21 @@ async def verify_status(did: str, request: Request):
         "is_human": is_human,
         "valid_until": credential.valid_until if credential else None,
         "bond_count": credential.bond_count if credential else 0,
+    }
+
+
+@router.get("/debug")
+async def debug_attempts(last: int = 20):
+    """Последние N попыток верификации — для отладки механизма."""
+    if not _DEBUG_LOG.exists():
+        return {"attempts": [], "total": 0}
+    lines = _DEBUG_LOG.read_text().strip().splitlines()
+    attempts = [json.loads(l) for l in lines[-last:]]
+    attempts.reverse()
+    return {
+        "total": len(lines),
+        "showing": len(attempts),
+        "attempts": attempts,
     }
 
 

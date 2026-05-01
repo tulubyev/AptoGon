@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
 export const metadata: Metadata = {
   title: 'HSI — Homo Sapience Internet',
@@ -9,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className="min-h-screen bg-[#0a0e1a] text-slate-200">
+      <body className={inter.className}>
         {children}
       </body>
     </html>
