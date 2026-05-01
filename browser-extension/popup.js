@@ -3,13 +3,47 @@
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.getElementById('body');
 
-  chrome.runtime.sendMessage({ type: 'GET_CREDENTIAL' }, (response) => {
-    if (chrome.runtime.lastError || !response) {
-      renderError();
-      return;
-    }
-    render(response);
-  });
+  // First check all open tabs for hsi_credential in localStorage,
+  // then fall back to extension storage
+  function loadCredential() {
+    chrome.tabs.query({}, (tabs) => {
+      const hsiTab = tabs.find(t =>
+        t.url && (t.url.includes('localhost:3000') || t.url.includes('homosapience.org'))
+      );
+      if (hsiTab) {
+        chrome.scripting.executeScript({
+          target: { tabId: hsiTab.id },
+          func: () => ({
+            cred: localStorage.getItem('hsi_credential'),
+            did: localStorage.getItem('hsi_did'),
+          }),
+        }, (results) => {
+          const data = results?.[0]?.result;
+          if (data?.cred) {
+            // Auto-sync into extension storage
+            chrome.storage.local.set({ hsi_credential: data.cred, hsi_did: data.did }, () => {
+              chrome.runtime.sendMessage({ type: 'GET_CREDENTIAL' }, (response) => {
+                render(response || { status: 'none' });
+              });
+            });
+          } else {
+            chrome.runtime.sendMessage({ type: 'GET_CREDENTIAL' }, (response) => {
+              render(response || { status: 'none' });
+            });
+          }
+          if (chrome.runtime.lastError) {
+            chrome.runtime.sendMessage({ type: 'GET_CREDENTIAL' }, (r) => render(r || { status: 'none' }));
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({ type: 'GET_CREDENTIAL' }, (response) => {
+          render(response || { status: 'none' });
+        });
+      }
+    });
+  }
+
+  loadCredential();
 
   // Read localStorage from the active tab (works on localhost:3000 or homosapience.org)
   function syncFromActiveTab() {
