@@ -7,23 +7,30 @@
   // On HSI pages (localhost or homosapience.org) — only sync credential, don't inject badges
   const isHsiPage = location.hostname.includes('homosapience.org') || location.hostname === 'localhost';
   if (isHsiPage) {
-    // Push credential to extension storage whenever it appears in localStorage
-    const syncCredential = () => {
-      const cred = localStorage.getItem('hsi_credential');
-      const did = localStorage.getItem('hsi_did');
-      if (cred) {
-        chrome.runtime.sendMessage({ type: 'SYNC_CREDENTIAL', cred, did });
-      }
+    // Push credential to extension storage
+    const syncCredential = (cred, did) => {
+      if (cred) chrome.runtime.sendMessage({ type: 'SYNC_CREDENTIAL', cred, did });
     };
-    // Sync immediately + watch for changes
-    syncCredential();
-    window.addEventListener('storage', syncCredential);
-    // Also poll for 30s after page load (credential may arrive after verification)
-    let polls = 0;
-    const poll = setInterval(() => {
-      syncCredential();
-      if (++polls >= 30) clearInterval(poll);
-    }, 1000);
+
+    // 1. Sync immediately on page load (if already verified before)
+    syncCredential(
+      localStorage.getItem('hsi_credential'),
+      localStorage.getItem('hsi_did')
+    );
+
+    // 2. Listen for direct event from verify page (fired right after verification)
+    window.addEventListener('hsi:verified', (e) => {
+      const { cred, did } = e.detail || {};
+      syncCredential(cred, did);
+    });
+
+    // 3. Watch localStorage changes (e.g. from other tabs)
+    window.addEventListener('storage', () => {
+      syncCredential(
+        localStorage.getItem('hsi_credential'),
+        localStorage.getItem('hsi_did')
+      );
+    });
     return;
   }
 

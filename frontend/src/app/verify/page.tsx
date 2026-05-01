@@ -55,7 +55,7 @@ export default function VerifyPage() {
         if (data.private_key_b64) localStorage.setItem('aptogon_key', data.private_key_b64)
         // Save in HSI browser extension format
         localStorage.setItem('hsi_did', data.did)
-        localStorage.setItem('hsi_credential', JSON.stringify({
+        const hsiCred = JSON.stringify({
           ...(data.credential ?? {}),
           issuanceDate: new Date().toISOString(),
           expirationDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
@@ -67,6 +67,11 @@ export default function VerifyPage() {
             expressionProof: data.expression_proof,
             txHash: data.tx_hash,
           },
+        })
+        localStorage.setItem('hsi_credential', hsiCred)
+        // Fire custom event so content.js can push to extension storage immediately
+        window.dispatchEvent(new CustomEvent('hsi:verified', {
+          detail: { cred: hsiCred, did: data.did }
         }))
         setStage('success')
       } else {
