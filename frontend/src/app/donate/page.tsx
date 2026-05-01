@@ -73,7 +73,7 @@ export default function DonatePage() {
           <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#111827', marginBottom: 16 }}>Оплата из России</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <a
-              href="https://pay.cloudtips.ru/p/homosapience"
+              href="https://pay.cloudtips.ru/p/76b1a873"
               target="_blank"
               rel="noopener noreferrer"
               style={{ background: '#fff', borderRadius: 16, border: '1px solid #e0f2fe', padding: '20px 24px', textDecoration: 'none', display: 'block' }}
