@@ -53,6 +53,20 @@ export default function VerifyPage() {
       if (data.passed && data.did) {
         localStorage.setItem('aptogon_did', data.did)
         if (data.private_key_b64) localStorage.setItem('aptogon_key', data.private_key_b64)
+        // Save in HSI browser extension format
+        localStorage.setItem('hsi_did', data.did)
+        localStorage.setItem('hsi_credential', JSON.stringify({
+          issuanceDate: new Date().toISOString(),
+          expirationDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+          credentialSubject: {
+            id: data.did,
+            isHuman: true,
+            confidence: data.confidence,
+            expressionProof: data.expression_proof,
+            txHash: data.tx_hash,
+          },
+          ...(data.credential ?? {}),
+        }))
         setStage('success')
       } else {
         setStage('failed')
