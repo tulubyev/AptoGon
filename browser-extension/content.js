@@ -4,11 +4,28 @@
 (function () {
   'use strict';
 
-  // Don't run on HSI own pages
-  if (
-    location.hostname.includes('homosapience.org') ||
-    location.hostname === 'localhost'
-  ) return;
+  // On HSI pages (localhost or homosapience.org) — only sync credential, don't inject badges
+  const isHsiPage = location.hostname.includes('homosapience.org') || location.hostname === 'localhost';
+  if (isHsiPage) {
+    // Push credential to extension storage whenever it appears in localStorage
+    const syncCredential = () => {
+      const cred = localStorage.getItem('hsi_credential');
+      const did = localStorage.getItem('hsi_did');
+      if (cred) {
+        chrome.runtime.sendMessage({ type: 'SYNC_CREDENTIAL', cred, did });
+      }
+    };
+    // Sync immediately + watch for changes
+    syncCredential();
+    window.addEventListener('storage', syncCredential);
+    // Also poll for 30s after page load (credential may arrive after verification)
+    let polls = 0;
+    const poll = setInterval(() => {
+      syncCredential();
+      if (++polls >= 30) clearInterval(poll);
+    }, 1000);
+    return;
+  }
 
   // ─── Site-specific selectors ───────────────────────────────────────────────
   const SITE_CONFIGS = [

@@ -11,6 +11,35 @@ document.addEventListener('DOMContentLoaded', () => {
     render(response);
   });
 
+  // Read localStorage from the active tab (works on localhost:3000 or homosapience.org)
+  function syncFromActiveTab() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab) return;
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => ({
+          cred: localStorage.getItem('hsi_credential'),
+          did: localStorage.getItem('hsi_did'),
+        }),
+      }, (results) => {
+        if (chrome.runtime.lastError || !results || !results[0]) {
+          body.innerHTML += `<p style="color:#ef4444;font-size:11px;text-align:center;margin-top:8px;">Не удалось прочитать — открой localhost:3000/verify</p>`;
+          return;
+        }
+        const { cred, did } = results[0].result;
+        if (cred) {
+          chrome.storage.local.set({ hsi_credential: cred, hsi_did: did }, () => {
+            // Reload popup
+            window.location.reload();
+          });
+        } else {
+          body.innerHTML += `<p style="color:#f59e0b;font-size:11px;text-align:center;margin-top:8px;">Credential не найден — сначала пройди верификацию на вкладке localhost:3000</p>`;
+        }
+      });
+    });
+  }
+
   function render(cred) {
     if (cred.status === 'valid') {
       renderValid(cred);
@@ -111,12 +140,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <button class="btn btn-primary" id="btn-verify">✍️ Пройти верификацию</button>
-      <a class="btn btn-secondary" href="https://homosapience.org/manifest" target="_blank">📜 Манифест проекта</a>
+      <button class="btn btn-secondary" id="btn-sync">🔄 Синхронизировать с вкладки</button>
     `;
 
     document.getElementById('btn-verify').addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'OPEN_VERIFY_PAGE' });
       window.close();
+    });
+
+    document.getElementById('btn-sync').addEventListener('click', () => {
+      syncFromActiveTab();
     });
   }
 

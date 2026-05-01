@@ -10,13 +10,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // keep channel open for async
   }
 
+  if (message.type === 'SYNC_CREDENTIAL') {
+    // Content script found credential in localStorage — save to extension storage
+    if (message.cred) {
+      chrome.storage.local.set({
+        hsi_credential: message.cred,
+        hsi_did: message.did || null,
+      }, () => {
+        updateBadgeIcon(true);
+      });
+    }
+    return false;
+  }
+
   if (message.type === 'VERIFY_ON_CHAIN') {
     verifyOnChain(message.did).then(sendResponse);
     return true;
   }
 
   if (message.type === 'OPEN_VERIFY_PAGE') {
-    chrome.tabs.create({ url: 'https://homosapience.org/verify' });
+    chrome.tabs.create({ url: 'http://localhost:3000/verify' });
   }
 });
 
