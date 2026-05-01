@@ -14,15 +14,24 @@ interface Props {
   disabled?: boolean
 }
 
+// Record a point at most every THROTTLE_MS ms (avoids 60fps flood with identical intervals)
+const THROTTLE_MS = 45
+// Minimum normalized distance to bother recording a new point
+const MIN_DIST = 0.004
+// How often to check for pauses during drawing (ms)
+const PAUSE_POLL_MS = 120
+
 export function GestureCanvas({ onComplete, disabled = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const eventsRef = useRef<TouchEventData[]>([])
-  const lastTimeRef = useRef<number>(0)
+  const gestureStartRef = useRef<number>(0)   // wall clock of gesture start
+  const lastRecordedRef = useRef<number>(0)   // wall clock of last recorded point
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null)
   const isDrawingRef = useRef(false)
+  const pauseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [isDone, setIsDone] = useState(false)
   const [pointCount, setPointCount] = useState(0)
 
-  // Resize canvas buffer to match its CSS size (no DPR scaling — avoids coord mismatch)
   const syncSize = (canvas: HTMLCanvasElement) => {
     const w = canvas.clientWidth
     const h = canvas.clientHeight
@@ -36,9 +45,7 @@ export function GestureCanvas({ onComplete, disabled = false }: Props) {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
-
     syncSize(canvas)
-
     ctx.strokeStyle = '#1d4ed8'
     ctx.lineWidth = 3
     ctx.lineCap = 'round'
@@ -56,54 +63,100 @@ export function GestureCanvas({ onComplete, disabled = false }: Props) {
       }
     }
 
+    // ── Push a recorded point ───────────────────────────────────────────────
+    const pushPoint = (x: number, y: number, pressure: number) => {
+      const now = Date.now()
+      const ts = now - gestureStartRef.current
+      const pause = lastRecordedRef.current ? now - lastRecordedRef.current : 0
+      lastRecordedRef.current = now
+      lastPosRef.current = { x, y }
+      eventsRef.current.push({ x, y, pressure, timestamp_ms: ts, pause_after_ms: pause })
+      setPointCount(eventsRef.current.length)
+    }
+
+    // ── Pause detector: fires every PAUSE_POLL_MS while drawing ────────────
+    const startPauseTimer = () => {
+      if (pauseTimerRef.current) clearInterval(pauseTimerRef.current)
+      pauseTimerRef.current = setInterval(() => {
+        if (!isDrawingRef.current) return
+        const now = Date.now()
+        const silence = now - lastRecordedRef.current
+        // If user has been still for >= PAUSE_POLL_MS, record a pause stamp
+        if (silence >= PAUSE_POLL_MS && lastPosRef.current) {
+          const { x, y } = lastPosRef.current
+          const ts = now - gestureStartRef.current
+          // Don't update lastRecordedRef — so next real move will show accumulated pause
+          eventsRef.current.push({
+            x, y,
+            pressure: 0.5,
+            timestamp_ms: ts,
+            pause_after_ms: silence,
+          })
+          // Move lastRecordedRef so we don't double-count this pause
+          lastRecordedRef.current = now
+          setPointCount(eventsRef.current.length)
+        }
+      }, PAUSE_POLL_MS)
+    }
+
+    const stopPauseTimer = () => {
+      if (pauseTimerRef.current) {
+        clearInterval(pauseTimerRef.current)
+        pauseTimerRef.current = null
+      }
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────────
     const onStart = (e: MouseEvent | TouchEvent) => {
       if (disabled || isDone) return
       e.preventDefault()
       isDrawingRef.current = true
       eventsRef.current = []
-      lastTimeRef.current = 0
+      gestureStartRef.current = Date.now()
+      lastRecordedRef.current = 0
+      lastPosRef.current = null
       setPointCount(0)
       syncSize(canvas)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const { cx, cy, nx, ny, pressure } = getXY('touches' in e ? e.touches[0] : e as MouseEvent)
+      const ev = 'touches' in e ? e.touches[0] : (e as MouseEvent)
+      const { cx, cy, nx, ny, pressure } = getXY(ev)
       ctx.beginPath()
       ctx.moveTo(cx, cy)
-      record(nx, ny, pressure)
+      pushPoint(Math.max(0, Math.min(1, nx)), Math.max(0, Math.min(1, ny)), pressure)
+      startPauseTimer()
     }
 
     const onMove = (e: MouseEvent | TouchEvent) => {
       if (!isDrawingRef.current || disabled) return
       e.preventDefault()
-      const { cx, cy, nx, ny, pressure } = getXY('touches' in e ? e.touches[0] : e as MouseEvent)
+      const ev = 'touches' in e ? e.touches[0] : (e as MouseEvent)
+      const { cx, cy, nx, ny, pressure } = getXY(ev)
       ctx.lineTo(cx, cy)
       ctx.stroke()
       ctx.beginPath()
       ctx.moveTo(cx, cy)
-      record(nx, ny, pressure)
+
+      const x = Math.max(0, Math.min(1, nx))
+      const y = Math.max(0, Math.min(1, ny))
+      const now = Date.now()
+      const dt = now - lastRecordedRef.current
+      const last = lastPosRef.current
+      const dist = last ? Math.sqrt((x - last.x) ** 2 + (y - last.y) ** 2) : 1
+
+      // Throttle: only record if enough time passed OR moved enough
+      if (dt >= THROTTLE_MS || dist >= MIN_DIST * 3) {
+        pushPoint(x, y, pressure)
+      }
     }
 
     const onEnd = () => {
       if (!isDrawingRef.current) return
       isDrawingRef.current = false
+      stopPauseTimer()
       if (eventsRef.current.length >= 10) {
         setIsDone(true)
         onComplete(eventsRef.current)
       }
-    }
-
-    const record = (nx: number, ny: number, pressure: number) => {
-      const now = Date.now()
-      const pause = lastTimeRef.current ? now - lastTimeRef.current : 0
-      lastTimeRef.current = now
-      const start = eventsRef.current[0]?.timestamp_ms || now
-      eventsRef.current.push({
-        x: Math.max(0, Math.min(1, nx)),
-        y: Math.max(0, Math.min(1, ny)),
-        pressure,
-        timestamp_ms: now - start,
-        pause_after_ms: pause,
-      })
-      setPointCount(eventsRef.current.length)
     }
 
     canvas.addEventListener('mousedown', onStart)
@@ -122,6 +175,7 @@ export function GestureCanvas({ onComplete, disabled = false }: Props) {
       canvas.removeEventListener('touchstart', onStart)
       canvas.removeEventListener('touchmove', onMove)
       canvas.removeEventListener('touchend', onEnd)
+      stopPauseTimer()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled, isDone, onComplete])

@@ -97,7 +97,7 @@ class ExpressionResult:
     @property
     def passed(self) -> bool:
         """True if verification passed with sufficient confidence."""
-        threshold = 0.7 if self.via_fallback else 0.85
+        threshold = 0.60 if self.via_fallback else 0.78
         return self.is_human and self.confidence >= threshold
 
 
@@ -242,15 +242,25 @@ HSI (Homo Sapience Internet) verification system.
 Your task: analyze statistical movement patterns to determine if they were
 produced by a human or an automated system (bot).
 
+IMPORTANT CONTEXT about the data:
+- Points are sampled at ~40-120ms intervals (throttled, not 60fps flood)
+- pause_after_ms reflects REAL pauses: inter-point gaps + explicit pause events
+- A human drawing slowly may have LOW point_count but HIGH pause_after_ms values
+- velocity_std > 0.01 is already a strong human signal
+- pause_entropy > 0.5 is a human signal; near 0 can happen even for humans if they draw one smooth stroke
+
 CRITICAL RULES:
-1. Humans have HIGH velocity variance — they speed up and slow down naturally
-2. Humans make CORRECTIONS — direction reversals are a positive signal
-3. Humans have HIGH pause entropy — pauses are irregular and unpredictable
-4. Bots have NEAR-ZERO variance, corrections, entropy
+1. Humans have velocity variance — they speed up and slow down (velocity_std > 0.005 = positive)
+2. Humans make CORRECTIONS — direction reversals are a strong positive signal
+3. Humans have irregular timing — rhythm_irregularity > 0.2 is positive
+4. Bots have NEAR-ZERO variance, zero corrections, perfectly regular timing
 5. People with motor difficulties (tremor, limited mobility) show HIGH corrections
    and LOW velocity but HIGH entropy — they are HUMAN, never block them
-6. If possible_motor_difficulty=true, be MORE lenient on velocity/correction thresholds
-7. Never block based on slow speed or many corrections alone
+6. If possible_motor_difficulty=true, be MORE lenient on all thresholds
+7. A slow careful human drawing a single smooth line may have low pause_entropy
+   but will have velocity variance and timing irregularity — DO NOT penalize this
+8. When in doubt, lean toward is_human=true — false negatives hurt real people
+9. Confidence 0.75-0.85 is normal for a genuine human; only clear bot patterns get < 0.7
 
 Return ONLY valid JSON with no markdown fences."""
 
@@ -309,7 +319,7 @@ Return ONLY valid JSON with no markdown fences."""
 
         # Step 4: Generate proof hash if verified
         expression_proof = None
-        threshold = 0.70 if pattern.possible_motor_difficulty else 0.85
+        threshold = 0.65 if pattern.possible_motor_difficulty else 0.78
         if is_human and confidence >= threshold:
             expression_proof = self._generate_proof(pattern, session_id, confidence)
 
