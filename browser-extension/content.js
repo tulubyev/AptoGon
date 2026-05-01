@@ -91,6 +91,71 @@
       ],
       type: 'inline',
     },
+    // Instagram
+    {
+      match: /instagram\.com/,
+      selectors: [
+        'header section h2',                    // profile username
+        'a[role="link"] span._aacl',            // story/post username
+        'div._aacl._aaco._aacu._aacx._aad7',   // comment username
+        'span.x1lliihq[dir="auto"]',            // generic username span
+      ],
+      type: 'inline',
+    },
+    // Substack
+    {
+      match: /substack\.com/,
+      selectors: [
+        'a.reader2-post-author',                // article author
+        '.pencraft .name',                      // author name block
+        'a[data-testid="user-profile-link"]',   // comment author
+        'span.reader2-clamp-line',              // subscriber display name
+        'h3.maybe-you-know-name',               // suggested author
+      ],
+      type: 'inline',
+    },
+    // YouTube
+    {
+      match: /youtube\.com/,
+      selectors: [
+        'ytd-channel-name a',                   // channel name in video
+        '#owner #channel-name a',               // channel owner
+        '#author-text span',                    // comment author
+        'yt-formatted-string#text.ytd-channel-name',
+      ],
+      type: 'inline',
+    },
+    // LinkedIn
+    {
+      match: /linkedin\.com/,
+      selectors: [
+        'h1.text-heading-xlarge',               // profile name
+        'span.feed-shared-actor__name',         // post author
+        'span.comments-post-meta__name',        // comment author
+        'a.app-aware-link span[aria-hidden]',   // inline name
+      ],
+      type: 'inline',
+    },
+    // Stack Overflow / Stack Exchange
+    {
+      match: /stackoverflow\.com|stackexchange\.com/,
+      selectors: [
+        '.user-details a',                      // post author
+        '#question-header + div .user-details a',
+        'a.comment-user',
+      ],
+      type: 'inline',
+    },
+    // Habr
+    {
+      match: /habr\.com/,
+      selectors: [
+        'a.tm-user-info__username',             // article author
+        'a.username',
+        '.comment__author a',
+      ],
+      type: 'inline',
+    },
   ];
 
   // ─── Badge SVG (inline, no external request needed) ────────────────────────

@@ -68,6 +68,28 @@ export default function DonatePage() {
           </div>
         </section>
 
+        {/* Russian payments */}
+        <section style={{ marginBottom: 48 }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#111827', marginBottom: 16 }}>Оплата из России</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <a
+              href="https://pay.cloudtips.ru/p/homosapience"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ background: '#fff', borderRadius: 16, border: '1px solid #e0f2fe', padding: '20px 24px', textDecoration: 'none', display: 'block' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <span style={{ fontSize: 22 }}>☁️</span>
+                <span style={{ fontWeight: 700, color: '#0284c7', fontSize: '0.95rem' }}>CloudTips</span>
+                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#0284c7', background: '#e0f2fe', padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>Тинькофф · СБП · карта</span>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>
+                Быстрый перевод через Тинькофф Pay, СБП или любую карту РФ
+              </p>
+            </a>
+          </div>
+        </section>
+
         {/* Crypto */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#111827', marginBottom: 16 }}>Криптовалюта</h2>
