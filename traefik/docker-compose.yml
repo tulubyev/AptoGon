@@ -27,15 +27,21 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.email=hello@homosapience.org"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      # File provider — для не-Docker сервисов
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
       # Логи
       - "--log.level=INFO"
       - "--accesslog=true"
     ports:
       - "80:80"
       - "443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-letsencrypt:/letsencrypt
+      - /opt/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
     networks:
       - traefik-public
     labels:
