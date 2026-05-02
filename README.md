@@ -48,5 +48,3 @@ cd gonka && python run_tests.py
 | API | FastAPI | Backend |
 | UI | Next.js 14 | Frontend |
 | Кэш | Redis | Бот-скоры |
-
-Убрано: ~~Cosmos SDK~~ · ~~Ceramic~~ · ~~IBC Bridge~~
