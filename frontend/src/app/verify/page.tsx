@@ -29,6 +29,7 @@ interface VerifyResult {
   private_key_b64?: string
   expression_proof?: string
   tx_hash?: string
+  credential?: Record<string, unknown>
   debug?: DebugPattern
 }
 
