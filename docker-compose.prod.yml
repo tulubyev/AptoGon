@@ -1,0 +1,30 @@
+# Production docker-compose — используй на VPS
+# Запуск: docker compose -f docker-compose.prod.yml up -d
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - PYTHONPATH=/app/gonka
+    volumes:
+      - /tmp:/tmp   # для debug log aptogon_attempts.jsonl
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=https://homosapience.org
+      - NODE_ENV=production
+    depends_on:
+      - api
