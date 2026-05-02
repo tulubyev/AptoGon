@@ -12,9 +12,8 @@ services:
     container_name: traefik
     restart: always
     command:
-      # API и dashboard
-      - "--api.dashboard=true"
-      - "--api.insecure=false"
+      # API dashboard отключён (включить позже добавив DNS запись traefik.homosapience.org)
+      - "--api.dashboard=false"
       # Docker provider
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -41,15 +40,7 @@ services:
     networks:
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      # Dashboard (защищён basic auth)
-      - "traefik.http.routers.traefik.rule=Host(`traefik.homosapience.org`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=traefik-auth"
-      # Пароль: admin / aptogon2025 (заменить через htpasswd)
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$xyz$$CHANGEME"
+      - "traefik.enable=false"
 
 volumes:
   traefik-letsencrypt:
