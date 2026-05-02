@@ -45,7 +45,7 @@ services:
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=traefik-auth"
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$2y$$05$$msCjRQ3.C378PSQowKSKxe91KehzF2.VB1FB.gVTu9jEIPgg1w.p."
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$2y$$05$$Z3HqCNJ8CTs.Y5VLM4Zpcea3WgvKFkr8GH/TjkHlF4flKyjNQwPqm"
 
 volumes:
   traefik-letsencrypt:
