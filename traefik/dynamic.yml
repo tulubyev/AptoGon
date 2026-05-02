@@ -60,31 +60,31 @@ http:
     nginx-static:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:8080"
+          - url: "http://172.28.0.1:8080"
 
     # delivery-api Docker контейнер
     lastmiles-api-svc:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:3100"
+          - url: "http://172.28.0.1:3100"
 
     # worldsafetyindex frontend (PM2)
     worldsafety-frontend:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:3000"
+          - url: "http://172.28.0.1:3000"
 
     # worldsafetyindex api (PM2)
     worldsafety-api-svc:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:3001"
+          - url: "http://172.28.0.1:3001"
 
     # zenya.spa
     zenya-svc:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:5000"
+          - url: "http://172.28.0.1:5000"
 
   middlewares:
     # IP whitelist для n8n (добавляется label на контейнер)
