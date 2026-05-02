@@ -1,0 +1,59 @@
+# Traefik — единый reverse proxy для всего сервера
+# Запуск: cd /opt/traefik && docker compose up -d
+#
+# После запуска:
+#   - http/https трафик идёт через Traefik
+#   - SSL автоматически через Let's Encrypt
+#   - Дашборд: https://traefik.homosapience.org
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: always
+    command:
+      # API и dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik-public"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect HTTP → HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.email=hello@homosapience.org"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      # Логи
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-letsencrypt:/letsencrypt
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      # Dashboard (защищён basic auth)
+      - "traefik.http.routers.traefik.rule=Host(`traefik.homosapience.org`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      # Пароль: admin / aptogon2025 (заменить через htpasswd)
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$xyz$$CHANGEME"
+
+volumes:
+  traefik-letsencrypt:
+
+networks:
+  traefik-public:
+    external: true

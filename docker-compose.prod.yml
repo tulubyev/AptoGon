@@ -1,5 +1,6 @@
-# Production docker-compose — используй на VPS
+# APTOGON Production — с Traefik
 # Запуск: docker compose -f docker-compose.prod.yml up -d
+# Требует: docker network create traefik-public
 
 services:
 
@@ -8,23 +9,49 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     restart: always
-    ports:
-      - "8000:8000"
+    # Порт НЕ публикуем — только внутри Docker сети
+    expose:
+      - "8000"
     env_file: .env
     environment:
       - PYTHONPATH=/app/gonka
     volumes:
-      - /tmp:/tmp   # для debug log aptogon_attempts.jsonl
+      - /tmp:/tmp
+    networks:
+      - traefik-public
+      - internal
+    # API доступен только через frontend rewrite — не нужен снаружи
 
   frontend:
     build:
       context: frontend
       dockerfile: Dockerfile
     restart: always
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
-      - NEXT_PUBLIC_API_URL=https://homosapience.org
+      - NEXT_PUBLIC_API_URL=http://api:8000
       - NODE_ENV=production
     depends_on:
       - api
+    networks:
+      - traefik-public
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      # HTTP роутер
+      - "traefik.http.routers.aptogon.rule=Host(`homosapience.org`) || Host(`www.homosapience.org`)"
+      - "traefik.http.routers.aptogon.entrypoints=websecure"
+      - "traefik.http.routers.aptogon.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aptogon.loadbalancer.server.port=3000"
+      # www → без www
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https://www\\.homosapience\\.org/(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://homosapience.org/$${1}"
+      - "traefik.http.routers.aptogon.middlewares=www-redirect"
+
+networks:
+  traefik-public:
+    external: true
+  internal:
+    driver: bridge

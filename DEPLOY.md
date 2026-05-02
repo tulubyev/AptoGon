@@ -1,115 +1,107 @@
 # Деплой APTOGON на VPS (homosapience.org)
 
-## Требования к серверу
-- Ubuntu 22.04 / Debian 12
-- 2 GB RAM минимум (4 GB рекомендуется)
-- Docker + Docker Compose
-- Домен homosapience.org направлен на IP сервера
-
----
-
-## Шаг 1 — Подключись к VPS
-
-```bash
-ssh root@<IP_СЕРВЕРА>
+## Архитектура
+```
+Internet → Traefik (:80/:443, SSL auto)
+              ├── homosapience.org      → aptogon frontend → api (internal)
+              ├── traefik.homosapience.org → traefik dashboard
+              └── другие проекты...
 ```
 
 ---
 
-## Шаг 2 — Установи Docker
+## Шаг 1 — Создать общую Docker сеть
 
 ```bash
-apt update && apt upgrade -y
-apt install -y docker.io docker-compose-plugin git curl
-systemctl enable docker && systemctl start docker
+docker network create traefik-public
 ```
 
 ---
 
-## Шаг 3 — Клонируй репозиторий
+## Шаг 2 — Остановить nginx
 
 ```bash
-git clone https://github.com/tulubyev/AptoGon.git /opt/aptogon
-cd /opt/aptogon
+sudo systemctl stop nginx
+sudo systemctl disable nginx
 ```
 
 ---
 
-## Шаг 4 — Создай .env файл
+## Шаг 3 — Запустить Traefik
 
 ```bash
-cp .env.example .env   # или создай вручную
-nano .env
+mkdir -p /opt/traefik
+cp /var/www/aptogon/traefik/docker-compose.yml /opt/traefik/
+cd /opt/traefik
+docker compose up -d
 ```
 
-Минимальный `.env` для production:
-```
-GONKA_PROVIDER=openrouter
-GONKA_BASE_URL=https://openrouter.ai/api/v1
-GONKA_API_KEY=sk-or-...          # твой ключ OpenRouter
-GONKA_MODEL=qwen/qwen3-14b
-GONKA_FALLBACK=true
-
-APTOS_NETWORK=mainnet
-APTOS_PRIVATE_KEY=0x...          # ключ Aptos кошелька
-APTOS_CONTRACT_ADDRESS=0x...
+Проверить:
+```bash
+docker logs traefik -f
 ```
 
 ---
 
-## Шаг 5 — SSL сертификат (Let's Encrypt)
+## Шаг 4 — Запустить APTOGON
 
 ```bash
-apt install -y certbot
-certbot certonly --standalone -d homosapience.org -d www.homosapience.org
+cd /var/www/aptogon
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ---
 
-## Шаг 6 — Настрой nginx
+## Шаг 5 — Проверить
 
 ```bash
-apt install -y nginx
-cp /opt/aptogon/nginx.conf /etc/nginx/sites-available/homosapience
-ln -s /etc/nginx/sites-available/homosapience /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
+curl https://homosapience.org/
+curl https://homosapience.org/api/
 ```
 
 ---
 
-## Шаг 7 — Запусти приложение
+## Подключить другие проекты к Traefik
 
-```bash
-cd /opt/aptogon
-bash deploy.sh
+Для каждого существующего проекта добавить в его `docker-compose.yml`:
+
+```yaml
+networks:
+  traefik-public:
+    external: true
+
+services:
+  yourapp:
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.yourapp.rule=Host(`yourdomain.com`)"
+      - "traefik.http.routers.yourapp.entrypoints=websecure"
+      - "traefik.http.routers.yourapp.tls.certresolver=letsencrypt"
+      - "traefik.http.services.yourapp.loadbalancer.server.port=<PORT>"
 ```
+
+### Примеры для текущих сервисов на сервере:
+
+| Сервис | Домен | Port |
+|--------|-------|------|
+| Portainer | portainer.homosapience.org | 9000 |
+| pgAdmin | pgadmin.homosapience.org | 80 |
+| Wiki.js | wiki.homosapience.org | 3000 |
+| n8n | n8n.homosapience.org | 5678 |
 
 ---
 
-## Шаг 8 — Проверь
+## Обновление APTOGON
 
 ```bash
-curl https://homosapience.org/         # главная страница
-curl https://homosapience.org/api/     # API
-```
-
----
-
-## Обновление кода
-
-При каждом новом коммите на сервере достаточно:
-```bash
-cd /opt/aptogon && bash deploy.sh
-```
-
----
-
-## Автообновление SSL (cron)
-
-```bash
-crontab -e
-# Добавь строку:
-0 3 * * * certbot renew --quiet && systemctl reload nginx
+cd /var/www/aptogon
+git pull origin main
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ---
@@ -117,10 +109,13 @@ crontab -e
 ## Логи
 
 ```bash
-# Логи backend
+# Traefik
+docker logs traefik -f
+
+# APTOGON backend
 docker compose -f docker-compose.prod.yml logs api -f
 
-# Логи frontend
+# APTOGON frontend
 docker compose -f docker-compose.prod.yml logs frontend -f
 
 # Попытки верификации
