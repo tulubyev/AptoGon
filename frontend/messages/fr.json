@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "Prouvez que vous êtes humain — d'un geste. Sans mot de passe, sans email, sans traçage."
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "Projet",
+    "community": "Communauté",
+    "copyright": "© 2025 Homo Sapience Internet · Open Source · MIT License",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "Manifeste",
+      "developers": "Développeurs",
+      "donate": "Faire un don",
+      "verify": "Vérifier"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "Pare-feu Humain pour Internet",
+    "subheadline": "Prouvez que vous êtes humain — d'un geste. Sans mot de passe, sans email, sans traçage.",
+    "cta_verify": "✍️ Vérifier maintenant",
+    "cta_chat": "💬 Chat",
+    "tech_title": "Technologies",
+    "tech_subtitle": "Cliquez sur une carte pour en savoir plus",
+    "how_title": "Comment fonctionne la vérification",
+    "how_subtitle": "4 étapes · 10 secondes · zéro donnée personnelle",
+    "step": "Étape",
+    "join_title": "Rejoindre",
+    "join_subtitle": "Nous construisons une infrastructure publique pour un internet humain",
+    "cards": {
+      "gesture": { "title": "Geste", "subtitle": "Expression Humaine", "modal_title": "Le geste comme preuve", "modal_body": "Vous tracez une ligne avec la souris ou le doigt. L'IA analyse non pas la forme mais les paramètres biométriques du mouvement : variabilité de vitesse, pauses, corrections, irrégularité du rythme. Les bots bougent parfaitement — les humains non." },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "Analyse des patterns", "modal_body": "Qwen3-14B (via OpenRouter) reçoit uniquement le vecteur statistique du geste — sans coordonnées, sans données personnelles. Il évalue 8 paramètres et renvoie : is_human, confidence (0–1), reasoning. Seuil : 85 %." },
+      "did": { "title": "DID:key", "subtitle": "Standard W3C", "modal_title": "Identifiant décentralisé", "modal_body": "Une paire de clés Ed25519 est générée dans le navigateur. La clé publique est encodée en did:key selon le standard W3C. Pas de serveurs, pas d'inscription — la clé vit uniquement dans le localStorage de votre navigateur." },
+      "aptos": { "title": "Aptos", "subtitle": "Blockchain", "modal_title": "Enregistrement on-chain", "modal_body": "Le hash SHA3-256 de la preuve (ExpressionProof) est écrit dans un contrat intelligent Move sur Aptos. Le hash ne contient aucune donnée personnelle — uniquement les statistiques du geste, le session_id et un intervalle d'1 heure. Immuable et vérifiable." },
+      "privacy": { "title": "Confidentialité", "subtitle": "Zéro PII", "modal_title": "Zéro donnée personnelle", "modal_body": "Les coordonnées brutes sont traitées uniquement sur l'appareil. Seul le vecteur statistique (8 nombres) est envoyé au serveur. Seul le hash est mis on-chain. Aucun nom, email ou IP n'est collecté ou stocké." },
+      "bond": { "title": "HSI Bond", "subtitle": "Réseau Humain", "modal_title": "Système de Lien Humain", "modal_body": "Les humains vérifiés peuvent se porter garants les uns des autres via HSI Bond. Chaque cautionnement renforce le HumanCredential. Les bots ne peuvent pas recevoir de caution de vraies personnes — c'est une couche de protection supplémentaire." }
+    },
+    "steps": {
+      "s01": { "title": "Tracez un geste", "desc": "Une ligne ou une forme à l'écran — vitesse, pauses, rythme" },
+      "s02": { "title": "Gonka AI analyse", "desc": "8 paramètres biométriques — les bots bougent parfaitement" },
+      "s03": { "title": "DID généré", "desc": "Clé Ed25519 dans votre navigateur — sans serveurs" },
+      "s04": { "title": "Enregistré sur Aptos", "desc": "Hash ExpressionProof — anonyme et permanent" }
+    },
+    "manifest_card": {
+      "title": "Manifeste",
+      "body": "Pourquoi nous construisons HSI, comment il va changer internet et quelle place chaque humain y aura.",
+      "cta": "Lire →"
+    },
+    "developers_card": {
+      "title": "Développeurs",
+      "body": "REST API, SDK, exemples d'intégration. Ajoutez la vérification humaine à votre app en une heure.",
+      "cta": "Docs →"
+    },
+    "donate_card": {
+      "title": "Soutien",
+      "body": "Un projet ouvert sans financement par capital-risque. Aidez-nous à développer une infrastructure publique.",
+      "cta": "Faire un don →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "Manifeste Homo Sapience",
+    "subtitle": "Internet a été construit par des gens — pour des gens. Il est temps de le protéger.",
+    "quote": "\"Internet n'est pas cassé — il ne sait juste pas qui vous êtes. APTOGON règle ça.\"",
+    "cta_verify": "✍️ Vérifier",
+    "cta_developers": "⚡ Développeurs",
+    "nav_label": "Manifeste"
+  },
+  "developers": {
+    "title": "Pour les Développeurs",
+    "nav_label": "Développeurs"
+  },
+  "donate": {
+    "title": "Soutenir le Projet",
+    "nav_label": "Faire un don"
+  },
+  "verify": {
+    "nav_label": "Vérifier"
+  },
+  "chat": {
+    "nav_label": "Chat"
+  },
+  "lang_switcher": {
+    "label": "Langue"
+  }
+}

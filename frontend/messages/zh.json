@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "用一个手势证明你是人类。无需密码，无需邮箱，无需追踪。"
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "项目",
+    "community": "社区",
+    "copyright": "© 2025 Homo Sapience Internet · 开源 · MIT License",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "宣言",
+      "developers": "开发者",
+      "donate": "捐赠",
+      "verify": "验证"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "互联网的人类防火墙",
+    "subheadline": "用一个手势证明你是人类。无需密码，无需邮箱，无需追踪。",
+    "cta_verify": "✍️ 立即验证",
+    "cta_chat": "💬 聊天",
+    "tech_title": "技术",
+    "tech_subtitle": "点击卡片了解更多",
+    "how_title": "验证如何运作",
+    "how_subtitle": "4步 · 10秒 · 零个人数据",
+    "step": "步骤",
+    "join_title": "加入我们",
+    "join_subtitle": "我们正在为人类互联网构建公共基础设施",
+    "cards": {
+      "gesture": { "title": "手势", "subtitle": "人类表达", "modal_title": "手势作为证明", "modal_body": "你用鼠标或手指画一条线。AI 分析的不是形状，而是生物特征运动参数：速度变化、停顿、纠正、节奏不规律性。机器人移动完美——人类则不然。" },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "模式分析", "modal_body": "Qwen3-14B（通过 OpenRouter）只接收统计手势向量——没有坐标，没有个人数据。评估8个参数并返回：is_human、confidence（0–1）、reasoning。阈值：85%。" },
+      "did": { "title": "DID:key", "subtitle": "W3C 标准", "modal_title": "去中心化标识符", "modal_body": "浏览器中生成 Ed25519 密钥对。公钥按照 W3C 标准编码为 did:key。无需服务器，无需注册——密钥仅存在于浏览器的 localStorage 中。" },
+      "aptos": { "title": "Aptos", "subtitle": "区块链", "modal_title": "链上记录", "modal_body": "证明（ExpressionProof）的 SHA3-256 哈希被写入 Aptos 上的 Move 智能合约。哈希不包含个人数据——仅包含手势统计信息、session_id 和1小时时间桶。不可篡改且可验证。" },
+      "privacy": { "title": "隐私", "subtitle": "零 PII", "modal_title": "零个人数据", "modal_body": "原始坐标仅在设备上处理。只有统计向量（8个数字）发送到服务器。只有哈希上链。不收集或存储姓名、邮箱或 IP。" },
+      "bond": { "title": "HSI Bond", "subtitle": "人类网络", "modal_title": "人类担保系统", "modal_body": "经过验证的人类可以通过 HSI Bond 相互担保。每次担保都会加强 HumanCredential。机器人无法获得真实人类的担保——这是额外的保护层。" }
+    },
+    "steps": {
+      "s01": { "title": "画一个手势", "desc": "屏幕上的一条线或形状——速度、停顿、节奏" },
+      "s02": { "title": "Gonka AI 分析", "desc": "8个生物特征参数——机器人移动完美" },
+      "s03": { "title": "生成 DID", "desc": "浏览器中的 Ed25519 密钥——无需服务器" },
+      "s04": { "title": "记录在 Aptos 上", "desc": "ExpressionProof 哈希——匿名且永久" }
+    },
+    "manifest_card": {
+      "title": "宣言",
+      "body": "我们为什么构建 HSI，它将如何改变互联网，以及每个人在其中的位置。",
+      "cta": "阅读 →"
+    },
+    "developers_card": {
+      "title": "开发者",
+      "body": "REST API、SDK、集成示例。一小时内为您的应用添加人类验证。",
+      "cta": "文档 →"
+    },
+    "donate_card": {
+      "title": "支持",
+      "body": "没有风险投资的开源项目。帮助我们发展公共基础设施。",
+      "cta": "捐赠 →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "Homo Sapience 宣言",
+    "subtitle": "互联网由人类建造——为人类服务。是时候保护它了。",
+    "quote": "\"互联网没有损坏——它只是不知道你是谁。APTOGON 解决了这个问题。\"",
+    "cta_verify": "✍️ 验证",
+    "cta_developers": "⚡ 开发者",
+    "nav_label": "宣言"
+  },
+  "developers": {
+    "title": "面向开发者",
+    "nav_label": "开发者"
+  },
+  "donate": {
+    "title": "支持项目",
+    "nav_label": "捐赠"
+  },
+  "verify": {
+    "nav_label": "验证"
+  },
+  "chat": {
+    "nav_label": "聊天"
+  },
+  "lang_switcher": {
+    "label": "语言"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "Prove you're human — with a gesture. No password, no email, no tracking."
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "Project",
+    "community": "Community",
+    "copyright": "© 2025 Homo Sapience Internet · Open Source · MIT License",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "Manifest",
+      "developers": "Developers",
+      "donate": "Donate",
+      "verify": "Verify"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "Human Firewall for the Internet",
+    "subheadline": "Prove you're human — with a gesture. No password, no email, no tracking.",
+    "cta_verify": "✍️ Verify now",
+    "cta_chat": "💬 Chat",
+    "tech_title": "Technologies",
+    "tech_subtitle": "Click a card to learn more",
+    "how_title": "How verification works",
+    "how_subtitle": "4 steps · 10 seconds · zero personal data",
+    "step": "Step",
+    "join_title": "Join",
+    "join_subtitle": "We are building public infrastructure for a human internet",
+    "cards": {
+      "gesture": { "title": "Gesture", "subtitle": "Human Expression", "modal_title": "Gesture as proof", "modal_body": "You draw a line with mouse or finger. AI analyses not the shape but biometric movement parameters: speed variability, pauses, corrections, rhythm irregularity. Bots move perfectly — humans don't." },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "Pattern analysis", "modal_body": "Qwen3-14B (via OpenRouter) receives only the statistical gesture vector — no coordinates, no personal data. Evaluates 8 parameters and returns: is_human, confidence (0–1), reasoning. Threshold: 85%." },
+      "did": { "title": "DID:key", "subtitle": "W3C Standard", "modal_title": "Decentralised identifier", "modal_body": "An Ed25519 key pair is generated in the browser. The public key is encoded as did:key following the W3C standard. No servers, no registration — the key lives only in your browser's localStorage." },
+      "aptos": { "title": "Aptos", "subtitle": "Blockchain", "modal_title": "On-chain record", "modal_body": "The SHA3-256 hash of the proof (ExpressionProof) is written to a Move smart contract on Aptos. The hash contains no personal data — only gesture statistics, session_id and a 1-hour time bucket. Immutable and verifiable." },
+      "privacy": { "title": "Privacy", "subtitle": "Zero PII", "modal_title": "Zero personal data", "modal_body": "Raw coordinates are processed on-device only. Only the statistical vector (8 numbers) is sent to the server. Only the hash goes on-chain. No name, email, or IP is collected or stored." },
+      "bond": { "title": "HSI Bond", "subtitle": "Human Network", "modal_title": "Human Bond System", "modal_body": "Verified humans can vouch for each other via HSI Bond. Each vouching strengthens the HumanCredential. Bots cannot receive vouching from real people — this is an additional layer of protection." }
+    },
+    "steps": {
+      "s01": { "title": "Draw a gesture", "desc": "A line or shape on screen — speed, pauses, rhythm" },
+      "s02": { "title": "Gonka AI analyses", "desc": "8 biometric parameters — bots move perfectly" },
+      "s03": { "title": "DID generated", "desc": "Ed25519 key in your browser — no servers" },
+      "s04": { "title": "Recorded on Aptos", "desc": "ExpressionProof hash — anonymous and permanent" }
+    },
+    "manifest_card": {
+      "title": "Manifest",
+      "body": "Why we are building HSI, how it will change the internet and what place every human will have in it.",
+      "cta": "Read →"
+    },
+    "developers_card": {
+      "title": "Developers",
+      "body": "REST API, SDK, integration examples. Add human verification to your app in an hour.",
+      "cta": "Docs →"
+    },
+    "donate_card": {
+      "title": "Support",
+      "body": "An open project without venture funding. Help us develop public infrastructure.",
+      "cta": "Donate →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "Homo Sapience Manifest",
+    "subtitle": "The internet was built by people — for people. It's time to protect that.",
+    "quote": "\"The internet isn't broken — it just doesn't know who you are. APTOGON fixes that.\"",
+    "cta_verify": "✍️ Verify",
+    "cta_developers": "⚡ Developers",
+    "nav_label": "Manifest"
+  },
+  "developers": {
+    "title": "For Developers",
+    "nav_label": "Developers"
+  },
+  "donate": {
+    "title": "Support the Project",
+    "nav_label": "Donate"
+  },
+  "verify": {
+    "nav_label": "Verify"
+  },
+  "chat": {
+    "nav_label": "Chat"
+  },
+  "lang_switcher": {
+    "label": "Language"
+  }
+}

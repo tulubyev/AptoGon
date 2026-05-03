@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "Demuestra que eres humano — con un gesto. Sin contraseña, sin correo, sin rastreo."
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "Proyecto",
+    "community": "Comunidad",
+    "copyright": "© 2025 Homo Sapience Internet · Código Abierto · MIT License",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "Manifiesto",
+      "developers": "Desarrolladores",
+      "donate": "Donar",
+      "verify": "Verificar"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "Cortafuegos Humano para Internet",
+    "subheadline": "Demuestra que eres humano — con un gesto. Sin contraseña, sin correo, sin rastreo.",
+    "cta_verify": "✍️ Verificar ahora",
+    "cta_chat": "💬 Chat",
+    "tech_title": "Tecnologías",
+    "tech_subtitle": "Haz clic en una tarjeta para saber más",
+    "how_title": "Cómo funciona la verificación",
+    "how_subtitle": "4 pasos · 10 segundos · cero datos personales",
+    "step": "Paso",
+    "join_title": "Únete",
+    "join_subtitle": "Estamos construyendo infraestructura pública para un internet humano",
+    "cards": {
+      "gesture": { "title": "Gesto", "subtitle": "Expresión Humana", "modal_title": "El gesto como prueba", "modal_body": "Trazas una línea con el ratón o el dedo. La IA analiza no la forma sino los parámetros biométricos del movimiento: variabilidad de velocidad, pausas, correcciones, irregularidad del ritmo. Los bots se mueven perfectamente — los humanos no." },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "Análisis de patrones", "modal_body": "Qwen3-14B (vía OpenRouter) recibe únicamente el vector estadístico del gesto — sin coordenadas, sin datos personales. Evalúa 8 parámetros y devuelve: is_human, confidence (0–1), reasoning. Umbral: 85%." },
+      "did": { "title": "DID:key", "subtitle": "Estándar W3C", "modal_title": "Identificador descentralizado", "modal_body": "Se genera un par de claves Ed25519 en el navegador. La clave pública se codifica como did:key siguiendo el estándar W3C. Sin servidores, sin registro — la clave vive únicamente en el localStorage de tu navegador." },
+      "aptos": { "title": "Aptos", "subtitle": "Blockchain", "modal_title": "Registro on-chain", "modal_body": "El hash SHA3-256 de la prueba (ExpressionProof) se escribe en un contrato inteligente Move en Aptos. El hash no contiene datos personales — solo estadísticas del gesto, session_id y un intervalo de 1 hora. Inmutable y verificable." },
+      "privacy": { "title": "Privacidad", "subtitle": "Cero PII", "modal_title": "Cero datos personales", "modal_body": "Las coordenadas brutas se procesan únicamente en el dispositivo. Solo el vector estadístico (8 números) se envía al servidor. Solo el hash va on-chain. No se recopila ni almacena nombre, correo ni IP." },
+      "bond": { "title": "HSI Bond", "subtitle": "Red Humana", "modal_title": "Sistema de Vínculo Humano", "modal_body": "Los humanos verificados pueden avalarse mutuamente a través de HSI Bond. Cada aval fortalece el HumanCredential. Los bots no pueden recibir avales de personas reales — esta es una capa adicional de protección." }
+    },
+    "steps": {
+      "s01": { "title": "Dibuja un gesto", "desc": "Una línea o forma en pantalla — velocidad, pausas, ritmo" },
+      "s02": { "title": "Gonka AI analiza", "desc": "8 parámetros biométricos — los bots se mueven perfectamente" },
+      "s03": { "title": "DID generado", "desc": "Clave Ed25519 en tu navegador — sin servidores" },
+      "s04": { "title": "Registrado en Aptos", "desc": "Hash ExpressionProof — anónimo y permanente" }
+    },
+    "manifest_card": {
+      "title": "Manifiesto",
+      "body": "Por qué construimos HSI, cómo cambiará internet y qué lugar tendrá cada persona en él.",
+      "cta": "Leer →"
+    },
+    "developers_card": {
+      "title": "Desarrolladores",
+      "body": "REST API, SDK, ejemplos de integración. Añade verificación humana a tu app en una hora.",
+      "cta": "Docs →"
+    },
+    "donate_card": {
+      "title": "Apoyo",
+      "body": "Un proyecto abierto sin financiación de riesgo. Ayúdanos a desarrollar infraestructura pública.",
+      "cta": "Donar →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "Manifiesto Homo Sapience",
+    "subtitle": "Internet fue construido por personas — para personas. Es hora de protegerlo.",
+    "quote": "\"Internet no está roto — simplemente no sabe quién eres. APTOGON lo soluciona.\"",
+    "cta_verify": "✍️ Verificar",
+    "cta_developers": "⚡ Desarrolladores",
+    "nav_label": "Manifiesto"
+  },
+  "developers": {
+    "title": "Para Desarrolladores",
+    "nav_label": "Desarrolladores"
+  },
+  "donate": {
+    "title": "Apoya el Proyecto",
+    "nav_label": "Donar"
+  },
+  "verify": {
+    "nav_label": "Verificar"
+  },
+  "chat": {
+    "nav_label": "Chat"
+  },
+  "lang_switcher": {
+    "label": "Idioma"
+  }
+}

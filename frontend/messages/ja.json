@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "ジェスチャーで人間であることを証明する。パスワード不要、メール不要、追跡なし。"
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "プロジェクト",
+    "community": "コミュニティ",
+    "copyright": "© 2025 Homo Sapience Internet · オープンソース · MIT License",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "マニフェスト",
+      "developers": "開発者",
+      "donate": "寄付",
+      "verify": "認証"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "インターネットのための人間ファイアウォール",
+    "subheadline": "ジェスチャーで人間であることを証明する。パスワード不要、メール不要、追跡なし。",
+    "cta_verify": "✍️ 今すぐ認証",
+    "cta_chat": "💬 チャット",
+    "tech_title": "テクノロジー",
+    "tech_subtitle": "カードをクリックして詳細を確認",
+    "how_title": "認証の仕組み",
+    "how_subtitle": "4ステップ · 10秒 · 個人データゼロ",
+    "step": "ステップ",
+    "join_title": "参加する",
+    "join_subtitle": "人間のためのインターネットの公共インフラを構築しています",
+    "cards": {
+      "gesture": { "title": "ジェスチャー", "subtitle": "人間の表現", "modal_title": "証明としてのジェスチャー", "modal_body": "マウスや指で線を描きます。AIは形ではなく、バイオメトリック運動パラメータを分析します：速度の変動、間隔、修正、リズムの不規則性。ボットは完璧に動く — 人間はそうではない。" },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "パターン分析", "modal_body": "Qwen3-14B（OpenRouter経由）は統計的なジェスチャーベクトルのみを受け取ります — 座標なし、個人データなし。8つのパラメータを評価し、is_human、confidence（0–1）、reasoningを返します。閾値：85%。" },
+      "did": { "title": "DID:key", "subtitle": "W3C標準", "modal_title": "分散型識別子", "modal_body": "ブラウザ内でEd25519鍵ペアが生成されます。公開鍵はW3C標準に従ってdid:keyとしてエンコードされます。サーバー不要、登録不要 — 鍵はブラウザのlocalStorageにのみ存在します。" },
+      "aptos": { "title": "Aptos", "subtitle": "ブロックチェーン", "modal_title": "オンチェーン記録", "modal_body": "証明（ExpressionProof）のSHA3-256ハッシュがAptos上のMoveスマートコントラクトに書き込まれます。ハッシュには個人データが含まれません — ジェスチャーの統計情報、session_id、および1時間のタイムバケットのみ。不変かつ検証可能。" },
+      "privacy": { "title": "プライバシー", "subtitle": "ゼロPII", "modal_title": "ゼロ個人データ", "modal_body": "生の座標はデバイス上でのみ処理されます。統計ベクトル（8つの数値）のみがサーバーに送信されます。ハッシュのみがオンチェーンに送られます。名前、メール、IPは収集・保存されません。" },
+      "bond": { "title": "HSI Bond", "subtitle": "人間ネットワーク", "modal_title": "ヒューマンボンドシステム", "modal_body": "認証された人間はHSI Bondを通じて互いに保証できます。各保証はHumanCredentialを強化します。ボットは実在する人物から保証を受けることができません — これは追加の保護レイヤーです。" }
+    },
+    "steps": {
+      "s01": { "title": "ジェスチャーを描く", "desc": "画面上の線または形 — 速度、間隔、リズム" },
+      "s02": { "title": "Gonka AIが分析", "desc": "8つのバイオメトリックパラメータ — ボットは完璧に動く" },
+      "s03": { "title": "DIDが生成される", "desc": "ブラウザ内のEd25519鍵 — サーバー不要" },
+      "s04": { "title": "Aptosに記録される", "desc": "ExpressionProofハッシュ — 匿名かつ永続的" }
+    },
+    "manifest_card": {
+      "title": "マニフェスト",
+      "body": "HSIを構築する理由、それがインターネットをどう変えるか、そして各人間がそこでどんな役割を持つか。",
+      "cta": "読む →"
+    },
+    "developers_card": {
+      "title": "開発者",
+      "body": "REST API、SDK、統合例。1時間でアプリに人間認証を追加。",
+      "cta": "ドキュメント →"
+    },
+    "donate_card": {
+      "title": "サポート",
+      "body": "ベンチャー資金なしのオープンプロジェクト。公共インフラの開発を支援してください。",
+      "cta": "寄付する →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "Homo Sapience マニフェスト",
+    "subtitle": "インターネットは人々によって — 人々のために作られた。守る時が来た。",
+    "quote": "\"インターネットは壊れていない — ただあなたが誰かを知らないだけだ。APTOGONがそれを解決する。\"",
+    "cta_verify": "✍️ 認証",
+    "cta_developers": "⚡ 開発者",
+    "nav_label": "マニフェスト"
+  },
+  "developers": {
+    "title": "開発者向け",
+    "nav_label": "開発者"
+  },
+  "donate": {
+    "title": "プロジェクトを支援",
+    "nav_label": "寄付"
+  },
+  "verify": {
+    "nav_label": "認証"
+  },
+  "chat": {
+    "nav_label": "チャット"
+  },
+  "lang_switcher": {
+    "label": "言語"
+  }
+}

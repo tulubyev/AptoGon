@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "HSI — Homo Sapience Internet",
+    "description": "הוכח שאתה אנושי — עם מחווה. ללא סיסמה, ללא אימייל, ללא מעקב."
+  },
+  "nav": {
+    "back": "← APTOGON"
+  },
+  "footer": {
+    "project": "פרויקט",
+    "community": "קהילה",
+    "copyright": "© 2025 Homo Sapience Internet · קוד פתוח · רישיון MIT",
+    "version": "v0.2.0 · Gonka AI · Aptos Testnet",
+    "links": {
+      "manifest": "מניפסט",
+      "developers": "מפתחים",
+      "donate": "תרומה",
+      "verify": "אימות"
+    },
+    "social": {
+      "telegram": "✈️ Telegram",
+      "github": "⭐ GitHub"
+    }
+  },
+  "home": {
+    "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
+    "headline": "חומת האש האנושית לאינטרנט",
+    "subheadline": "הוכח שאתה אנושי — עם מחווה. ללא סיסמה, ללא אימייל, ללא מעקב.",
+    "cta_verify": "✍️ אמת עכשיו",
+    "cta_chat": "💬 צ'אט",
+    "tech_title": "טכנולוגיות",
+    "tech_subtitle": "לחץ על כרטיס לפרטים נוספים",
+    "how_title": "איך עובד האימות",
+    "how_subtitle": "4 שלבים · 10 שניות · אפס נתונים אישיים",
+    "step": "שלב",
+    "join_title": "הצטרף",
+    "join_subtitle": "אנחנו בונים תשתית ציבורית לאינטרנט אנושי",
+    "cards": {
+      "gesture": { "title": "מחווה", "subtitle": "ביטוי אנושי", "modal_title": "מחווה כהוכחה", "modal_body": "אתה מצייר קו בעכבר או באצבע. ה-AI מנתח לא את הצורה אלא את פרמטרי התנועה הביומטריים: שונות מהירות, עצירות, תיקונים, אי-סדירות קצב. בוטים זזים בצורה מושלמת — בני אדם לא." },
+      "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "ניתוח דפוסים", "modal_body": "Qwen3-14B (דרך OpenRouter) מקבל רק את וקטור המחווה הסטטיסטי — ללא קואורדינטות, ללא נתונים אישיים. מעריך 8 פרמטרים ומחזיר: is_human, confidence (0–1), reasoning. סף: 85%." },
+      "did": { "title": "DID:key", "subtitle": "תקן W3C", "modal_title": "מזהה מבוזר", "modal_body": "זוג מפתחות Ed25519 נוצר בדפדפן. המפתח הציבורי מקודד כ-did:key בהתאם לתקן W3C. ללא שרתים, ללא הרשמה — המפתח חי רק ב-localStorage של הדפדפן שלך." },
+      "aptos": { "title": "Aptos", "subtitle": "בלוקצ'יין", "modal_title": "רשומה על-שרשרת", "modal_body": "גיבוב SHA3-256 של ההוכחה (ExpressionProof) נכתב לחוזה חכם Move על Aptos. הגיבוב אינו מכיל נתונים אישיים — רק סטטיסטיקות מחווה, session_id ודלי זמן של שעה אחת. בלתי ניתן לשינוי ובר-אימות." },
+      "privacy": { "title": "פרטיות", "subtitle": "אפס PII", "modal_title": "אפס נתונים אישיים", "modal_body": "קואורדינטות גולמיות מעובדות על המכשיר בלבד. רק הוקטור הסטטיסטי (8 מספרים) נשלח לשרת. רק הגיבוב עולה לשרשרת. לא נאסף או נשמר שם, אימייל או IP." },
+      "bond": { "title": "HSI Bond", "subtitle": "רשת אנושית", "modal_title": "מערכת קשר אנושי", "modal_body": "בני אדם מאומתים יכולים להמליץ זה על זה דרך HSI Bond. כל המלצה מחזקת את HumanCredential. בוטים לא יכולים לקבל המלצות מאנשים אמיתיים — זוהי שכבת הגנה נוספת." }
+    },
+    "steps": {
+      "s01": { "title": "צייר מחווה", "desc": "קו או צורה על המסך — מהירות, עצירות, קצב" },
+      "s02": { "title": "Gonka AI מנתח", "desc": "8 פרמטרים ביומטריים — בוטים זזים בצורה מושלמת" },
+      "s03": { "title": "DID נוצר", "desc": "מפתח Ed25519 בדפדפן שלך — ללא שרתים" },
+      "s04": { "title": "נרשם ב-Aptos", "desc": "גיבוב ExpressionProof — אנונימי וקבוע" }
+    },
+    "manifest_card": {
+      "title": "מניפסט",
+      "body": "למה אנחנו בונים את HSI, איך זה ישנה את האינטרנט ומה יהיה מקומו של כל אדם בו.",
+      "cta": "קרא →"
+    },
+    "developers_card": {
+      "title": "מפתחים",
+      "body": "REST API, SDK, דוגמאות שילוב. הוסף אימות אנושי לאפליקציה שלך תוך שעה.",
+      "cta": "תיעוד →"
+    },
+    "donate_card": {
+      "title": "תמיכה",
+      "body": "פרויקט פתוח ללא מימון הון סיכון. עזור לנו לפתח תשתית ציבורית.",
+      "cta": "תרום →"
+    }
+  },
+  "manifest": {
+    "label": "homosapience.org",
+    "title": "מניפסט Homo Sapience",
+    "subtitle": "האינטרנט נבנה על ידי אנשים — עבור אנשים. הגיע הזמן להגן על כך.",
+    "quote": "\"האינטרנט לא שבור — הוא פשוט לא יודע מי אתה. APTOGON מתקן את זה.\"",
+    "cta_verify": "✍️ אמת",
+    "cta_developers": "⚡ מפתחים",
+    "nav_label": "מניפסט"
+  },
+  "developers": {
+    "title": "למפתחים",
+    "nav_label": "מפתחים"
+  },
+  "donate": {
+    "title": "תמוך בפרויקט",
+    "nav_label": "תרומה"
+  },
+  "verify": {
+    "nav_label": "אימות"
+  },
+  "chat": {
+    "nav_label": "צ'אט"
+  },
+  "lang_switcher": {
+    "label": "שפה"
+  }
+}
