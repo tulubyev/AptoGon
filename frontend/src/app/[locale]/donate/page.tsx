@@ -4,13 +4,6 @@ export default function DonatePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#faf5ff', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      {/* Nav */}
-      <nav style={{ borderBottom: '1px solid #e9d5ff', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 12, background: '#fff' }}>
-        <Link href="/" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>← APTOGON</Link>
-        <span style={{ color: '#d1d5db' }}>·</span>
-        <span style={{ color: '#7c3aed', fontSize: 14, fontWeight: 600 }}>Поддержать</span>
-      </nav>
-
       {/* Hero */}
       <div style={{ background: 'linear-gradient(135deg, #2d1b69 0%, #4c1d95 100%)', padding: '72px 24px 60px', textAlign: 'center' }}>
         <div style={{ fontSize: 56, marginBottom: 16 }}>🤝</div>

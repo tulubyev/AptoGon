@@ -4,13 +4,6 @@ export default function ManifestPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      {/* Nav */}
-      <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Link href="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>← APTOGON</Link>
-        <span style={{ color: '#1e293b' }}>·</span>
-        <span style={{ color: '#a78bfa', fontSize: 14, fontWeight: 600 }}>Manifest</span>
-      </nav>
-
       {/* Hero */}
       <div style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)', padding: '72px 24px 60px', textAlign: 'center' }}>
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.25em', color: '#7c3aed', textTransform: 'uppercase', marginBottom: 16 }}>homosapience.org</p>

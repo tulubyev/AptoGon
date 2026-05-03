@@ -4,13 +4,6 @@ export default function DevelopersPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      {/* Nav */}
-      <nav style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 12, background: '#fff' }}>
-        <Link href="/" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>← APTOGON</Link>
-        <span style={{ color: '#d1d5db' }}>·</span>
-        <span style={{ color: '#0891b2', fontSize: 14, fontWeight: 600 }}>Developers</span>
-      </nav>
-
       {/* Hero */}
       <div style={{ background: 'linear-gradient(135deg, #0c1a2e 0%, #0a2540 100%)', padding: '72px 24px 60px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>⚡</div>

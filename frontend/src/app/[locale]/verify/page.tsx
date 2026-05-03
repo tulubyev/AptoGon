@@ -98,7 +98,6 @@ export default function VerifyPage() {
 
       {/* ── HERO ── */}
       <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 px-6 py-12 text-white text-center">
-        <Link href="/" className="text-blue-300 hover:text-white text-sm mb-6 inline-block">← APTOGON</Link>
         <h1 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
           Подтверди, что ты <span className="text-cyan-400">человек</span>
         </h1>
