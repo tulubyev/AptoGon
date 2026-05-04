@@ -25,12 +25,15 @@ from routers import verify, bond, chat, translate, governance
 from middleware.firewall import AptogonFirewall
 from services.gonka_service import GonkaService
 from services.aptos_service import AptosService
+from services.db_service import DatabaseService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.gonka = GonkaService()
     app.state.aptos = AptosService()
+    app.state.db = DatabaseService()
+    await app.state.db.connect()
     stats = await app.state.aptos.get_stats()
     print(f"""
 ╔══════════════════════════════════════╗
@@ -42,6 +45,7 @@ async def lifespan(app: FastAPI):
 ╚══════════════════════════════════════╝
     """)
     yield
+    await app.state.db.close()
 
 
 app = FastAPI(

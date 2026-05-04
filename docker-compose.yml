@@ -14,6 +14,7 @@ services:
     env_file: .env
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://aptogon:aptogon@postgres:5432/aptogon
       - PYTHONPATH=/app/gonka
     volumes:
       - ./backend:/app/backend
@@ -21,7 +22,10 @@ services:
     working_dir: /app/backend
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     build:
@@ -38,3 +42,23 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: aptogon
+      POSTGRES_PASSWORD: aptogon
+      POSTGRES_DB: aptogon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aptogon -d aptogon"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
