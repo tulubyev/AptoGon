@@ -29,7 +29,49 @@ interface VerifyResult {
   expression_proof?: string
   tx_hash?: string
   credential?: Record<string, unknown>
+  trust_score?: number
+  trust_label?: string   // newcomer | community_verified | trusted
   debug?: DebugPattern
+}
+
+// ── Device Fingerprint (Sybil Protection C) ────────────────────────────────
+// Raw data never leaves the browser — only SHA-256 hash is sent
+async function collectDeviceFingerprint(): Promise<string> {
+  try {
+    // 1. Canvas fingerprint
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.fillStyle = '#f60'
+      ctx.fillRect(0, 0, 10, 10)
+      ctx.fillStyle = '#069'
+      ctx.font = '14px Arial'
+      ctx.fillText('hsi', 2, 15)
+    }
+    const canvasData = canvas.toDataURL()
+
+    // 2. Platform signals (not personal data)
+    const platform = [
+      navigator.hardwareConcurrency || 0,
+      navigator.language || '',
+      screen.colorDepth || 0,
+      `${screen.width}x${screen.height}`,
+      Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    ].join('|')
+
+    // 3. Hash locally — raw data never transmitted
+    const raw = canvasData + '||' + platform
+    const hashBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(raw)
+    )
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+  } catch {
+    // If fingerprinting fails (privacy mode, etc.), return empty — server will skip check
+    return ''
+  }
 }
 
 const STEP_COLORS = [
@@ -66,11 +108,29 @@ export default function VerifyPage() {
     setStage('analyzing')
     setError(null)
     try {
+      // Collect device fingerprint (Sybil Protection C)
+      const fpHash = await collectDeviceFingerprint()
+
       const res = await fetch('/api/verify/expression', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events, session_id: sessionId }),
+        body: JSON.stringify({
+          events,
+          session_id: sessionId,
+          fp_hash: fpHash || undefined,
+        }),
       })
+      // Handle rate-limit (Sybil Protection C)
+      if (res.status === 429) {
+        const detail = await res.json()
+        const nextDate = detail.detail?.next_allowed_at
+          ? new Date(detail.detail.next_allowed_at * 1000).toLocaleDateString()
+          : ''
+        setError(`Too many verifications from this device. Try again after ${nextDate}.`)
+        setStage('draw')
+        return
+      }
+
       const data: VerifyResult = await res.json()
       setResult(data)
       if (data.passed && data.did) {
@@ -87,6 +147,8 @@ export default function VerifyPage() {
             confidence: data.confidence,
             expressionProof: data.expression_proof,
             txHash: data.tx_hash,
+            trust_score: data.trust_score ?? 0.1,
+            trust_label: data.trust_label ?? 'newcomer',
           },
         })
         localStorage.setItem('hsi_credential', hsiCred)
@@ -294,6 +356,35 @@ export default function VerifyPage() {
                 </div>
               </div>
             </div>
+
+            {/* Trust Score Badge (Sybil Protection B) */}
+            {result?.trust_score !== undefined && (
+              <div style={{ background: '#fff', borderRadius: 18, padding: '14px 20px', border: '2px solid rgba(124,58,237,0.15)', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 22 }}>
+                    {result.trust_score >= 1.0 ? '🏆' : result.trust_score >= 0.5 ? '✅' : '🌱'}
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
+                      Trust Score: <span style={{ color: '#7c3aed' }}>{Math.round((result.trust_score ?? 0.1) * 100)}%</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>
+                      {result.trust_label === 'trusted' && '🏆 Trusted — 7+ bonds'}
+                      {result.trust_label === 'community_verified' && '✅ Community Verified — 3+ bonds'}
+                      {(!result.trust_label || result.trust_label === 'newcomer') && '🌱 Newcomer — get 3 bonds to reach 50%'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 120 }}>
+                  <div style={{ height: 6, background: '#f3e8ff', borderRadius: 99, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#a78bfa)', borderRadius: 99, width: `${Math.round((result.trust_score ?? 0.1) * 100)}%`, transition: 'width 0.6s ease' }} />
+                  </div>
+                  {(result.trust_label === 'newcomer' || !result.trust_label) && (
+                    <div style={{ fontSize: '0.7rem', color: '#a78bfa', textAlign: 'right' }}>→ get bonds to grow</div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* DID */}
             <div style={{ background: '#fff', borderRadius: 24, padding: 24, border: '2px solid rgba(8,145,178,0.2)', marginBottom: 16, boxShadow: '0 4px 24px rgba(8,145,178,0.07)' }}>

@@ -75,6 +75,29 @@ class BondApprove(BaseModel):
     approver_did: str
 
 
+# ── Trust Score ────────────────────────────────────────────────────────────────
+
+def _calculate_trust_score(bond_count: int) -> float:
+    """
+    Уровни доверия по числу поручительств:
+      0 bonds → 0.1  (прошёл Gonka AI, новичок)
+      1 bond  → 0.2
+      2 bonds → 0.3
+      3 bonds → 0.5  (признан сообществом)
+      4 bonds → 0.6
+      5 bonds → 0.7
+      6 bonds → 0.8
+      7+ bonds → 1.0 (полное доверие)
+    """
+    if bond_count == 0:
+        return 0.1
+    if bond_count < 3:
+        return 0.1 + bond_count * 0.1
+    if bond_count < 7:
+        return 0.5 + (bond_count - 3) * 0.1
+    return 1.0
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 async def _issue_credential(aptos, bond_req: dict, approvals: list[str]) -> str:
@@ -202,6 +225,11 @@ async def approve_bond(body: BondApprove, request: Request):
     """
     Поручитель одобряет запрос.
     При BOND_THRESHOLD+ одобрениях выдаётся HumanCredential.
+
+    Защита от Sybil:
+      - Нельзя поручиться за самого себя
+      - Поручитель должен иметь trust_score >= 0.5 (признан сообществом)
+        или являться системным поручителем (SYSTEM_GUARANTORS)
     """
     db = request.app.state.db
     aptos = request.app.state.aptos
@@ -215,15 +243,45 @@ async def approve_bond(body: BondApprove, request: Request):
             detail=f"Bond request status is '{bond_req['status']}' — cannot approve",
         )
 
+    # ── Защита от самопоручительства ──────────────────────────────────────────
+    if body.approver_did == bond_req["requester_did"]:
+        raise HTTPException(status_code=400, detail="Cannot vouch for yourself")
+
+    # ── Проверка trust_score поручителя ───────────────────────────────────────
+    # Системные поручители всегда разрешены (bootstrap)
+    if body.approver_did not in SYSTEM_GUARANTORS:
+        approver_cred = await aptos.get_credential(body.approver_did)
+        if approver_cred is None or approver_cred.trust_score < 0.5:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "insufficient_trust",
+                    "message": "Approver trust_score < 0.5. Get at least 3 bonds first.",
+                    "required": 0.5,
+                    "current": approver_cred.trust_score if approver_cred else 0.0,
+                },
+            )
+
     approvals = await db.add_approval(body.request_id, body.approver_did)
 
     if len(approvals) >= BOND_THRESHOLD:
         tx_hash = await _issue_credential(aptos, bond_req, approvals)
         await db.update_bond_status(body.request_id, "approved", tx_hash=tx_hash)
+
+        # Обновляем trust_score получателя
+        new_score = _calculate_trust_score(len(approvals))
+        from services.did_key import did_hash as _did_hash
+        await aptos.update_trust_score(
+            address=bond_req["requester_did"],
+            new_score=new_score,
+            bond_sponsors=[_did_hash(d)[:12] for d in approvals],
+        )
+
         return {
             "status": "credential_issued",
             "approvals": len(approvals),
             "tx_hash": tx_hash,
+            "trust_score": new_score,
             "message": f"HumanCredential issued after {len(approvals)} bonds",
         }
 

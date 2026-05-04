@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 _DEBUG_LOG = Path("/tmp/aptogon_attempts.jsonl")
@@ -39,6 +39,8 @@ class TouchEventDTO(BaseModel):
 class ExpressionRequest(BaseModel):
     events: list[TouchEventDTO] = Field(..., min_length=3)
     session_id: Optional[str] = None
+    fp_hash: Optional[str] = Field(None, min_length=16, max_length=128,
+                                   description="SHA-256 device fingerprint hash (64 hex chars)")
 
 
 class VerifyResponse(BaseModel):
@@ -56,6 +58,9 @@ class VerifyResponse(BaseModel):
     expression_proof: Optional[str] = None
     tx_hash: Optional[str] = None
     credential: Optional[dict] = None
+    # Sybil Protection B: Trust Score
+    trust_score: float = 0.1
+    trust_label: str = "newcomer"   # newcomer | community_verified | trusted
     # Debug: pattern metrics
     debug: Optional[dict] = None
 
@@ -73,6 +78,35 @@ async def verify_expression(body: ExpressionRequest, request: Request):
     gonka = request.app.state.gonka
     aptos = request.app.state.aptos
     session_id = body.session_id or str(uuid.uuid4())
+
+    # ── [Sybil Protection C] Device fingerprint rate-limit ────────────────────
+    if body.fp_hash:
+        fp_store = getattr(request.app.state, "fp_store", None)
+        if fp_store:
+            fp_result = fp_store.check_and_record(
+                fp_hash=body.fp_hash,
+                did_hash_short="pending",
+            )
+            if not fp_result.allowed:
+                import datetime
+                next_dt = datetime.datetime.utcfromtimestamp(
+                    fp_result.next_allowed_at
+                ).strftime("%Y-%m-%d") if fp_result.next_allowed_at else "N/A"
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error": "verification_rate_limit",
+                        "message": (
+                            f"Too many verifications from this device "
+                            f"({fp_result.count}/{fp_result.limit} "
+                            f"in {fp_result.window_days} days). "
+                            f"Next allowed: {next_dt}"
+                        ),
+                        "next_allowed_at": fp_result.next_allowed_at,
+                        "count": fp_result.count,
+                        "limit": fp_result.limit,
+                    },
+                )
 
     # Конвертируем DTO
     pattern_debug = {}
@@ -138,6 +172,13 @@ async def verify_expression(body: ExpressionRequest, request: Request):
     # Генерируем did:key (заменяет Ceramic — никаких нод)
     did_key = DIDKey.generate()
 
+    # Обновляем did_hash_short в fingerprint-записи (была "pending")
+    if body.fp_hash:
+        fp_store = getattr(request.app.state, "fp_store", None)
+        if fp_store:
+            from services.did_key import did_hash as _did_hash
+            fp_store.update_did_hash(body.fp_hash, _did_hash(did_key.did)[:12])
+
     # Создаём credential
     credential = create_human_credential(
         subject_did=did_key.did,
@@ -169,6 +210,8 @@ async def verify_expression(body: ExpressionRequest, request: Request):
         expression_proof=result.expression_proof,
         tx_hash=tx_result.get("tx_hash"),
         credential=signed_credential,
+        trust_score=0.1,
+        trust_label="newcomer",
         debug=pattern_debug,
     )
 

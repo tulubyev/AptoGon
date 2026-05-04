@@ -36,10 +36,26 @@ class CredentialRecord:
     issued_at: int
     valid_until: int
     revoked: bool = False
+    # ── Sybil Protection B: Trust Score ────────────────────────────────────────
+    trust_score: float = 0.1     # 0.1 = прошёл Gonka AI; 0.5 = 3+ bonds; 1.0 = 7+ bonds
+    bond_sponsors: list = None   # did_hash_short поручителей (анонимно)
+
+    def __post_init__(self):
+        if self.bond_sponsors is None:
+            self.bond_sponsors = []
 
     @property
     def is_valid(self) -> bool:
         return not self.revoked and time.time() < self.valid_until
+
+    @property
+    def trust_label(self) -> str:
+        """Человекочитаемый уровень доверия."""
+        if self.trust_score >= 1.0:
+            return "trusted"
+        if self.trust_score >= 0.5:
+            return "community_verified"
+        return "newcomer"
 
 
 class AptosService:
@@ -156,6 +172,25 @@ class AptosService:
         if address in self._local_store:
             return self._local_store[address]
         return None
+
+    async def update_trust_score(
+        self,
+        address: str,
+        new_score: float,
+        bond_sponsors: Optional[list[str]] = None,
+    ) -> dict:
+        """
+        Обновить trust_score для credential.
+        В production: вызов hsi::credential::update_trust_score(address, score_u64).
+        """
+        new_score = round(min(1.0, max(0.0, new_score)), 2)
+        if address in self._local_store:
+            rec = self._local_store[address]
+            rec.trust_score = new_score
+            if bond_sponsors is not None:
+                rec.bond_sponsors = bond_sponsors
+            rec.bond_count = len(rec.bond_sponsors)
+        return {"updated": True, "address": address, "trust_score": new_score}
 
     async def revoke(self, address: str) -> bool:
         """Отозвать credential (бот обнаружен)."""

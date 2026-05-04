@@ -26,6 +26,7 @@ from middleware.firewall import AptogonFirewall
 from services.gonka_service import GonkaService
 from services.aptos_service import AptosService
 from services.db_service import DatabaseService
+from services.device_fingerprint import DeviceFingerprintStore
 
 
 @asynccontextmanager
@@ -33,6 +34,7 @@ async def lifespan(app: FastAPI):
     app.state.gonka = GonkaService()
     app.state.aptos = AptosService()
     app.state.db = DatabaseService()
+    app.state.fp_store = DeviceFingerprintStore()
     await app.state.db.connect()
     stats = await app.state.aptos.get_stats()
     print(f"""
