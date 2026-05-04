@@ -34,7 +34,7 @@ export default function Footer() {
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
 
         {/* Top row: logo + links */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 32, marginBottom: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 32, marginBottom: 32 }}>
 
           {/* Brand */}
           <div>
