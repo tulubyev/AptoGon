@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS bond_requests (
     status           TEXT    NOT NULL DEFAULT 'pending',
     auto_approved    BOOLEAN NOT NULL DEFAULT FALSE,
     tx_hash          TEXT,
+    retry_count      INT     NOT NULL DEFAULT 0,
+    sent_to_count    INT     NOT NULL DEFAULT 0,
     created_at       BIGINT  NOT NULL,
     updated_at       BIGINT  NOT NULL
 );
@@ -40,6 +42,14 @@ CREATE TABLE IF NOT EXISTS bond_approvals (
     approver_did TEXT   NOT NULL,
     approved_at  BIGINT NOT NULL,
     UNIQUE (request_id, approver_did)
+);
+
+CREATE TABLE IF NOT EXISTS bond_rejections (
+    id            SERIAL PRIMARY KEY,
+    request_id    TEXT   NOT NULL REFERENCES bond_requests(id) ON DELETE CASCADE,
+    rejecter_did  TEXT,
+    rejected_at   BIGINT NOT NULL,
+    UNIQUE (request_id, rejecter_did)
 );
 
 CREATE INDEX IF NOT EXISTS idx_bond_req_requester ON bond_requests (requester_did);
@@ -99,13 +109,17 @@ class DatabaseService:
             "status": "pending",
             "auto_approved": False,
             "tx_hash": None,
+            "retry_count": 0,
+            "sent_to_count": 0,
             "approvals": [],
+            "rejections": [],
             "created_at": now,
             "updated_at": now,
         }
         if self._use_mem:
             self._mem[rid] = record
             self._mem_approvals[rid] = []
+            self._mem.setdefault("_rejections", {})[rid] = []
             return record
 
         async with self._pool.acquire() as conn:
@@ -113,8 +127,8 @@ class DatabaseService:
                 """
                 INSERT INTO bond_requests
                     (id, requester_did, expression_proof, confidence, message,
-                     status, auto_approved, created_at, updated_at)
-                VALUES ($1,$2,$3,$4,$5,'pending',FALSE,$6,$6)
+                     status, auto_approved, retry_count, sent_to_count, created_at, updated_at)
+                VALUES ($1,$2,$3,$4,$5,'pending',FALSE,0,0,$6,$6)
                 """,
                 rid, requester_did, expression_proof, confidence, message, now,
             )
@@ -192,6 +206,73 @@ class DatabaseService:
                 """,
                 request_id, status, tx_hash, auto_approved, now,
             )
+
+    async def record_rejection(
+        self, request_id: str, rejecter_did: Optional[str] = None
+    ) -> bool:
+        """
+        Записать отказ от поручительства.
+        Возвращает True если все разосланные кандидаты отказали → нужен retry.
+        """
+        now = int(time.time())
+        if self._use_mem:
+            rejs = self._mem.get("_rejections", {}).setdefault(request_id, [])
+            if rejecter_did and rejecter_did not in rejs:
+                rejs.append(rejecter_did)
+            req = self._mem.get(request_id)
+            if req:
+                req["updated_at"] = now
+                approvals = self._mem_approvals.get(request_id, [])
+                sent = req.get("sent_to_count", 0)
+                # Все отказали и нет ни одного одобрения
+                return len(rejs) >= sent and len(approvals) == 0
+            return False
+
+        async with self._pool.acquire() as conn:
+            if rejecter_did:
+                await conn.execute(
+                    """
+                    INSERT INTO bond_rejections (request_id, rejecter_did, rejected_at)
+                    VALUES ($1,$2,$3) ON CONFLICT (request_id, rejecter_did) DO NOTHING
+                    """,
+                    request_id, rejecter_did, now,
+                )
+            rej_count = await conn.fetchval(
+                "SELECT COUNT(*) FROM bond_rejections WHERE request_id=$1", request_id
+            )
+            appr_count = await conn.fetchval(
+                "SELECT COUNT(*) FROM bond_approvals WHERE request_id=$1", request_id
+            )
+            sent = await conn.fetchval(
+                "SELECT sent_to_count FROM bond_requests WHERE id=$1", request_id
+            ) or 0
+            return int(rej_count) >= sent and int(appr_count) == 0
+
+    async def increment_retry(self, request_id: str, new_sent_to: int) -> int:
+        """Увеличить счётчик retry и обновить sent_to_count. Возвращает новый retry_count."""
+        now = int(time.time())
+        if self._use_mem:
+            req = self._mem.get(request_id)
+            if req:
+                req["retry_count"] = req.get("retry_count", 0) + 1
+                req["sent_to_count"] = new_sent_to
+                req["updated_at"] = now
+                return req["retry_count"]
+            return 0
+
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                UPDATE bond_requests
+                SET retry_count = retry_count + 1,
+                    sent_to_count = $2,
+                    updated_at = $3
+                WHERE id = $1
+                RETURNING retry_count
+                """,
+                request_id, new_sent_to, now,
+            )
+            return row["retry_count"] if row else 0
 
     async def get_bonds_for_did(self, did: str) -> dict:
         if self._use_mem:

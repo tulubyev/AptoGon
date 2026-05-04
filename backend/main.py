@@ -22,11 +22,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import verify, bond, chat, translate, governance
+from routers import ws as ws_router
 from middleware.firewall import AptogonFirewall
 from services.gonka_service import GonkaService
 from services.aptos_service import AptosService
 from services.db_service import DatabaseService
 from services.device_fingerprint import DeviceFingerprintStore
+from services.ws_manager import ConnectionManager
 
 
 @asynccontextmanager
@@ -35,6 +37,7 @@ async def lifespan(app: FastAPI):
     app.state.aptos = AptosService()
     app.state.db = DatabaseService()
     app.state.fp_store = DeviceFingerprintStore()
+    app.state.ws_manager = ConnectionManager()
     await app.state.db.connect()
     stats = await app.state.aptos.get_stats()
     print(f"""
@@ -63,11 +66,12 @@ app.add_middleware(CORSMiddleware,
 )
 app.add_middleware(AptogonFirewall)
 
-app.include_router(verify.router,     prefix="/api/verify",     tags=["Verification"])
-app.include_router(bond.router,       prefix="/api/bond",       tags=["Bond"])
-app.include_router(chat.router,       prefix="/api/chat",       tags=["Chat"])
-app.include_router(translate.router,  prefix="/api/translate",  tags=["Translation"])
-app.include_router(governance.router, prefix="/api/governance", tags=["Governance"])
+app.include_router(verify.router,      prefix="/api/verify",     tags=["Verification"])
+app.include_router(bond.router,        prefix="/api/bond",       tags=["Bond"])
+app.include_router(chat.router,        prefix="/api/chat",       tags=["Chat"])
+app.include_router(translate.router,   prefix="/api/translate",  tags=["Translation"])
+app.include_router(governance.router,  prefix="/api/governance", tags=["Governance"])
+app.include_router(ws_router.router,   prefix="/ws",             tags=["WebSocket"])
 
 
 @app.get("/api/health")

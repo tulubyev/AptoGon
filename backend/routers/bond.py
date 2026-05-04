@@ -33,6 +33,8 @@ router = APIRouter()
 
 AUTO_APPROVE_THRESHOLD = 0.95  # confidence >= этого → авто-апрув системными поручителями
 BOND_THRESHOLD = 3             # минимум N поручительств для выдачи credential
+MAX_RETRIES = 3                # максимум повторных рассылок при отказе всех
+RETRY_BATCH_SIZE = 10          # кандидатов в одной рассылке
 
 # Bootstrap-пул системных поручителей.
 # В production → заменяются реальными DID верифицированной команды.
@@ -184,8 +186,30 @@ async def create_bond_request(body: BondRequestCreate, request: Request):
             created_at=bond_req["created_at"],
         )
 
-    # ── Stage 2: В очередь ─────────────────────────────────────────────────────
-    # TODO: отправить уведомления кандидатам через WebSocket/push
+    # ── Stage 2: Очередь + WebSocket push поручителям ─────────────────────────
+    ws_manager = getattr(request.app.state, "ws_manager", None)
+    delivered = []
+    if ws_manager:
+        # Собираем did_hash из пула кандидатов (TODO: реальный пул из БД)
+        # Сейчас — берём первые RETRY_BATCH_SIZE онлайн-соединений
+        import random, hashlib
+        rng = random.Random(int(time.time()))  # разные кандидаты при каждом запросе
+        all_online = list(ws_manager._connections.keys())
+        candidates_to_notify = rng.sample(all_online, min(RETRY_BATCH_SIZE, len(all_online)))
+
+        from services.did_key import did_hash as _did_hash
+        requester_short = _did_hash(body.requester_did)[:12]
+        delivered = await ws_manager.notify_bond_request(
+            guarantor_did_hashes=candidates_to_notify,
+            request_id=bond_req["id"],
+            requester_did_hash_short=requester_short,
+            confidence=body.confidence,
+            message=body.message,
+        )
+        # Обновляем sent_to_count
+        if delivered:
+            await db.increment_retry(bond_req["id"], len(candidates_to_notify))
+
     return BondStatusResponse(
         request_id=bond_req["id"],
         status="pending",
@@ -292,15 +316,103 @@ async def approve_bond(body: BondApprove, request: Request):
     }
 
 
+@router.post("/retry/{request_id}")
+async def retry_bond_request(request_id: str, request: Request):
+    """
+    Повторная рассылка bond-запроса новой волне кандидатов.
+    Вызывается автоматически если все предыдущие кандидаты отказали,
+    или вручную запрашивающим.
+    Максимум MAX_RETRIES (3) повторов.
+    """
+    db = request.app.state.db
+    ws_manager = getattr(request.app.state, "ws_manager", None)
+
+    bond_req = await db.get_bond_request(request_id)
+    if not bond_req:
+        raise HTTPException(status_code=404, detail="Bond request not found")
+    if bond_req["status"] != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Bond request status is '{bond_req['status']}' — cannot retry",
+        )
+
+    retry_count = bond_req.get("retry_count", 0)
+    if retry_count >= MAX_RETRIES:
+        # Исчерпали все попытки — переводим в failed
+        await db.update_bond_status(request_id, "failed")
+        from services.did_key import did_hash as _did_hash
+        requester_hash = _did_hash(bond_req["requester_did"])[:16]
+        if ws_manager:
+            await ws_manager.notify_bond_update(
+                requester_hash, request_id, "failed"
+            )
+        return {
+            "status": "failed",
+            "message": f"Exhausted {MAX_RETRIES} retry attempts. No guarantors available.",
+            "retry_count": retry_count,
+        }
+
+    delivered = []
+    if ws_manager:
+        import random
+        rng = random.Random(int(time.time()) + retry_count)
+        all_online = list(ws_manager._connections.keys())
+        candidates = rng.sample(all_online, min(RETRY_BATCH_SIZE, len(all_online)))
+
+        from services.did_key import did_hash as _did_hash
+        requester_short = _did_hash(bond_req["requester_did"])[:12]
+        delivered = await ws_manager.notify_bond_request(
+            guarantor_did_hashes=candidates,
+            request_id=request_id,
+            requester_did_hash_short=requester_short,
+            confidence=bond_req.get("confidence", 0),
+            message=bond_req.get("message"),
+        )
+
+    new_retry = await db.increment_retry(request_id, len(delivered))
+    return {
+        "status": "pending",
+        "retry_count": new_retry,
+        "notified": len(delivered),
+        "message": f"Retry #{new_retry}: sent to {len(delivered)} guarantors online",
+    }
+
+
 @router.post("/reject")
 async def reject_bond(request_id: str, rejecter_did: str, request: Request):
-    """Поручитель отклоняет запрос."""
+    """
+    Поручитель отклоняет запрос.
+    Если все разосланные кандидаты отказали → автоматический retry.
+    """
     db = request.app.state.db
     bond_req = await db.get_bond_request(request_id)
     if not bond_req:
         raise HTTPException(status_code=404, detail="Bond request not found")
-    await db.update_bond_status(request_id, "rejected")
-    return {"status": "rejected"}
+
+    # Записываем отказ; метод возвращает True если все отказали
+    all_declined = await db.record_rejection(request_id, rejecter_did)
+
+    if all_declined:
+        # Автоматический retry (если не исчерпан лимит)
+        from fastapi import BackgroundTasks
+        retry_count = bond_req.get("retry_count", 0)
+        if retry_count < MAX_RETRIES:
+            # Запускаем retry через отдельный вызов эндпоинта
+            # (упрощённо — вызываем логику напрямую)
+            await retry_bond_request(request_id, request)
+            return {"status": "all_declined_retry_sent", "retry": retry_count + 1}
+        else:
+            await db.update_bond_status(request_id, "failed")
+            ws_manager = getattr(request.app.state, "ws_manager", None)
+            if ws_manager:
+                from services.did_key import did_hash as _did_hash
+                requester_hash = _did_hash(bond_req["requester_did"])[:16]
+                await ws_manager.notify_bond_update(
+                    requester_hash, request_id, "failed"
+                )
+            return {"status": "failed", "message": "All retries exhausted"}
+
+    return {"status": "reject_recorded"}
 
 
 @router.get("/my")

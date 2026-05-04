@@ -1,8 +1,11 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_URL || ''
+// WS URL: wss://... в production, ws://... в dev
+const WS_BASE = API.replace(/^http/, 'ws')
+const MAX_RETRIES = 3
 
 interface Candidate {
   did_hash_short: string
@@ -14,11 +17,28 @@ interface Candidate {
 
 interface BondStatus {
   request_id: string
-  status: string          // pending | approved | rejected
+  status: string          // pending | approved | rejected | failed
   auto_approved: boolean
   approvals: number
   needed: number
   tx_hash?: string
+}
+
+// ── Incoming bond request notification (for guarantors) ─────────────────────
+interface IncomingBondRequest {
+  type: 'bond:request'
+  request_id: string
+  requester: string        // short did hash
+  confidence_badge: string // '⭐ high' | '✓ good' | '~ ok'
+  message: string
+  ts: number
+}
+
+// ── Anonymous bond chat message ─────────────────────────────────────────────
+interface BondChatMsg {
+  from: 'requester' | 'guarantor'
+  text: string
+  ts: number
 }
 
 // ── Trust Score Algorithm explanation ─────────────────────────────────────────
@@ -152,12 +172,125 @@ function TrustScoreInfo() {
 export default function BondPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [stage, setStage] = useState<'browse' | 'requesting' | 'waiting' | 'done'>('browse')
+  const [stage, setStage] = useState<'browse' | 'requesting' | 'waiting' | 'done' | 'failed'>('browse')
   const [approvals, setApprovals] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [autoApproved, setAutoApproved] = useState(false)
   const [error, setError] = useState('')
+  const [retryCount, setRetryCount] = useState(0)
+  // Guarantor mode: incoming bond requests via WebSocket
+  const [incomingRequests, setIncomingRequests] = useState<IncomingBondRequest[]>([])
+  // Anonymous chat per active bond request
+  const [chatMsgs, setChatMsgs] = useState<Record<string, BondChatMsg[]>>({})
+  const [chatInput, setChatInput] = useState('')
+  const [activeChatReqId, setActiveChatReqId] = useState<string | null>(null)
+
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wsRef = useRef<WebSocket | null>(null)
+  const requestIdRef = useRef<string>('')
+
+  // ── WebSocket connection ─────────────────────────────────────────────────────
+  const connectWS = useCallback((didHash: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return
+    const ws = new WebSocket(`${WS_BASE}/ws/${didHash}`)
+    wsRef.current = ws
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data)
+        handleWsMessage(msg)
+      } catch { /* ignore */ }
+    }
+    ws.onclose = () => {
+      // Reconnect after 3s
+      setTimeout(() => connectWS(didHash), 3000)
+    }
+
+    // Keepalive ping every 25s
+    const ping = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.send('{"type":"ping"}')
+    }, 25000)
+    ws.onclose = () => { clearInterval(ping); setTimeout(() => connectWS(didHash), 3000) }
+  }, [])
+
+  const handleWsMessage = useCallback((msg: Record<string, unknown>) => {
+    const type = msg.type as string
+    const reqId = msg.request_id as string | undefined
+
+    // Guarantor receives a bond request
+    if (type === 'bond:request') {
+      setIncomingRequests(prev => {
+        if (prev.find(r => r.request_id === reqId)) return prev
+        return [msg as unknown as IncomingBondRequest, ...prev].slice(0, 20)
+      })
+      return
+    }
+    // Requester receives approval update
+    if (type === 'bond:approved') {
+      setApprovals(msg.approvals as number)
+      return
+    }
+    // All 3 bonds collected
+    if (type === 'bond:complete') {
+      setApprovals(3)
+      if (msg.tx_hash) setTxHash(msg.tx_hash as string)
+      setTimeout(() => setStage('done'), 600)
+      return
+    }
+    // Retry sent
+    if (type === 'bond:retry') {
+      setRetryCount(msg.retry_num as number)
+      setApprovals(0)
+      return
+    }
+    // All retries exhausted
+    if (type === 'bond:failed') {
+      setStage('failed')
+      return
+    }
+    // Anonymous chat message
+    if (type === 'bond:chat' && reqId) {
+      const chatMsg: BondChatMsg = { from: msg.from as 'requester' | 'guarantor', text: msg.text as string, ts: msg.ts as number }
+      setChatMsgs(prev => ({ ...prev, [reqId]: [...(prev[reqId] ?? []), chatMsg] }))
+      return
+    }
+  }, [])
+
+  // ── Connect WS on mount if DID exists ───────────────────────────────────────
+  useEffect(() => {
+    const did = typeof window !== 'undefined' ? localStorage.getItem('aptogon_did') : null
+    if (did) {
+      // Use SHA-256 of did as ws channel id (matches backend did_hash[:16])
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(did)).then(buf => {
+        const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
+        connectWS(hash)
+      })
+    }
+    return () => { wsRef.current?.close(); if (pollRef.current) clearInterval(pollRef.current) }
+  }, [connectWS])
+
+  // ── Send chat message ────────────────────────────────────────────────────────
+  const sendChatMessage = (reqId: string, role: 'requester' | 'guarantor') => {
+    if (!chatInput.trim() || !wsRef.current) return
+    wsRef.current.send(JSON.stringify({ type: 'bond:chat', request_id: reqId, text: chatInput.trim(), role }))
+    setChatMsgs(prev => ({ ...prev, [reqId]: [...(prev[reqId] ?? []), { from: role, text: chatInput.trim(), ts: Date.now() / 1000 }] }))
+    setChatInput('')
+  }
+
+  // ── Approve incoming bond as guarantor ──────────────────────────────────────
+  const approveIncoming = (reqId: string) => {
+    const did = typeof window !== 'undefined' ? localStorage.getItem('aptogon_did') : ''
+    if (!wsRef.current || !did) return
+    wsRef.current.send(JSON.stringify({ type: 'bond:approve', request_id: reqId, did }))
+    setIncomingRequests(prev => prev.filter(r => r.request_id !== reqId))
+  }
+
+  const rejectIncoming = (reqId: string) => {
+    const did = typeof window !== 'undefined' ? localStorage.getItem('aptogon_did') : ''
+    if (!wsRef.current) return
+    wsRef.current.send(JSON.stringify({ type: 'bond:reject', request_id: reqId, did: did || '' }))
+    setIncomingRequests(prev => prev.filter(r => r.request_id !== reqId))
+  }
 
   // ── Load candidates ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -254,6 +387,8 @@ export default function BondPage() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       const data: BondStatus = await r.json()
 
+      requestIdRef.current = data.request_id
+
       // Auto-approve: visually tick all 3 guarantors quickly
       if (data.status === 'approved' && data.auto_approved) {
         setStage('waiting')
@@ -287,6 +422,34 @@ export default function BondPage() {
         }
       }, 1800)
     }
+  }
+
+  // ── Failed screen ────────────────────────────────────────────────────────────
+  if (stage === 'failed') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#0f172a' }}>
+        <div style={{ textAlign: 'center', maxWidth: 440 }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>😔</div>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fff', marginBottom: 8 }}>Не удалось собрать поручительства</h1>
+          <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: 8 }}>
+            Все {MAX_RETRIES} попытки рассылки исчерпаны. Сейчас мало поручителей онлайн.
+          </p>
+          <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: 24 }}>
+            Попробуйте позже — когда в HSI сети будет больше активных участников, или обратитесь в Telegram.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => { setStage('browse'); setApprovals(0); setRetryCount(0) }}
+              style={{ padding: '12px 24px', background: '#7c3aed', color: '#fff', fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer' }}>
+              🔄 Попробовать снова
+            </button>
+            <a href="https://t.me/aptogon" target="_blank" rel="noopener noreferrer"
+              style={{ padding: '12px 24px', background: '#1e293b', color: '#fff', fontWeight: 700, borderRadius: 10, border: '1px solid #334155', textDecoration: 'none' }}>
+              ✈️ Telegram
+            </a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // ── Done screen ──────────────────────────────────────────────────────────────
@@ -359,10 +522,43 @@ export default function BondPage() {
             <p style={{ color: '#7c3aed', fontSize: '0.75rem' }}>
               Gonka AI: confidence ≥ 95% — система поручается автоматически
             </p>
-          ) : (
-            <p style={{ color: '#374151', fontSize: '0.75rem' }}>
-              Запросы отправлены · ожидаем ответа поручителей
+          ) : retryCount > 0 ? (
+            <p style={{ color: '#fb923c', fontSize: '0.8rem' }}>
+              ⟳ Повторная рассылка #{retryCount} — предыдущие поручители не ответили
             </p>
+          ) : (
+            <p style={{ color: '#475569', fontSize: '0.75rem' }}>
+              Запросы отправлены через WebSocket · ожидаем ответа поручителей
+            </p>
+          )}
+
+          {/* Anonymous chat with guarantors */}
+          {requestIdRef.current && (
+            <div style={{ marginTop: 24, background: '#1e293b', borderRadius: 12, padding: 16, textAlign: 'left' }}>
+              <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: 8, marginTop: 0 }}>
+                💬 Анонимный чат с поручителями
+              </p>
+              <div style={{ maxHeight: 120, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {(chatMsgs[requestIdRef.current] ?? []).map((m, i) => (
+                  <div key={i} style={{ fontSize: '0.78rem', color: m.from === 'guarantor' ? '#4ade80' : '#93c5fd', background: '#0f172a', borderRadius: 8, padding: '6px 10px' }}>
+                    <span style={{ opacity: 0.6 }}>{m.from === 'guarantor' ? '🤝 Поручитель' : '👤 Вы'}: </span>{m.text}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendChatMessage(requestIdRef.current!, 'requester')}
+                  placeholder="Написать поручителям..."
+                  style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none' }}
+                />
+                <button onClick={() => sendChatMessage(requestIdRef.current!, 'requester')}
+                  style={{ padding: '8px 14px', background: '#0891b2', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: '0.8rem' }}>
+                  →
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -383,6 +579,73 @@ export default function BondPage() {
             Выбери <strong style={{ color: '#fff' }}>10+ человек</strong> для запроса (нужно 3 согласия)
           </p>
         </div>
+
+        {/* ── Incoming bond requests (guarantor mode) ─────────────────────── */}
+        {incomingRequests.length > 0 && (
+          <div style={{ background: 'rgba(124,58,237,0.08)', border: '2px solid rgba(124,58,237,0.3)', borderRadius: 16, padding: 20, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: 20 }}>🔔</span>
+              <h3 style={{ color: '#fff', fontWeight: 800, margin: 0, fontSize: '1rem' }}>
+                Входящие запросы на поручительство ({incomingRequests.length})
+              </h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {incomingRequests.map(req => (
+                <div key={req.request_id} style={{ background: '#1e293b', borderRadius: 12, padding: '14px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#64748b' }}>
+                          {req.requester}…
+                        </span>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(59,130,246,0.15)', color: '#60a5fa', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>
+                          {req.confidence_badge}
+                        </span>
+                      </div>
+                      {req.message && (
+                        <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0 }}>«{req.message.slice(0, 120)}»</p>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <button onClick={() => approveIncoming(req.request_id)}
+                        style={{ padding: '8px 18px', background: '#059669', color: '#fff', fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.82rem' }}>
+                        ✓ Поручиться
+                      </button>
+                      <button onClick={() => rejectIncoming(req.request_id)}
+                        style={{ padding: '8px 14px', background: '#1e293b', color: '#64748b', fontWeight: 600, borderRadius: 8, border: '1px solid #334155', cursor: 'pointer', fontSize: '0.82rem' }}>
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  {/* Mini chat per incoming request */}
+                  <div style={{ borderTop: '1px solid #334155', paddingTop: 10 }}>
+                    <div style={{ maxHeight: 80, overflowY: 'auto', marginBottom: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {(chatMsgs[req.request_id] ?? []).map((m, i) => (
+                        <div key={i} style={{ fontSize: '0.75rem', color: m.from === 'requester' ? '#93c5fd' : '#4ade80', background: '#0f172a', borderRadius: 6, padding: '4px 8px' }}>
+                          <span style={{ opacity: 0.6 }}>{m.from === 'requester' ? '👤 Запрашивающий' : '🤝 Вы'}: </span>{m.text}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        value={activeChatReqId === req.request_id ? chatInput : ''}
+                        onChange={e => { setActiveChatReqId(req.request_id); setChatInput(e.target.value) }}
+                        onKeyDown={e => e.key === 'Enter' && activeChatReqId === req.request_id && sendChatMessage(req.request_id, 'guarantor')}
+                        placeholder="Спросить..."
+                        style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', borderRadius: 6, padding: '6px 10px', color: '#fff', fontSize: '0.75rem', outline: 'none' }}
+                      />
+                      <button
+                        onClick={() => { setActiveChatReqId(req.request_id); sendChatMessage(req.request_id, 'guarantor') }}
+                        style={{ padding: '6px 12px', background: '#334155', color: '#94a3b8', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.75rem' }}>
+                        →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Trust Score Info ─────────────────────────────────────────────── */}
         <TrustScoreInfo />
