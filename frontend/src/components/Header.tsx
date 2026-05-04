@@ -31,7 +31,7 @@ export default function Header() {
   const cleanPath = '/' + pathname.split('/').slice(2).join('/')
 
   return (
-    <header style={{
+    <header dir="ltr" style={{
       background: 'rgba(10, 15, 26, 0.95)',
       backdropFilter: 'blur(12px)',
       borderBottom: '1px solid rgba(255,255,255,0.06)',

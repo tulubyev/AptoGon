@@ -25,7 +25,7 @@ function GitHubIcon() {
 
 export default function Footer() {
   return (
-    <footer style={{
+    <footer dir="ltr" style={{
       background: '#0a0f1a',
       borderTop: '1px solid rgba(255,255,255,0.06)',
       padding: '40px 24px 28px',

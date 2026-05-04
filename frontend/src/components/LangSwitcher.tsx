@@ -3,6 +3,8 @@ import { useLocale } from 'next-intl'
 import { usePathname, useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
 
+const RTL_LOCALES = ['ar', 'he']
+
 const LANGS = [
   { code: 'en', label: 'EN', name: 'English' },
   { code: 'ru', label: 'RU', name: 'Русский' },
@@ -24,6 +26,7 @@ export default function LangSwitcher() {
   const [open, setOpen] = useState(false)
 
   const current = LANGS.find(l => l.code === locale) || LANGS[0]
+  const isRTL = RTL_LOCALES.includes(locale)
 
   const switchLocale = (code: string) => {
     router.replace(pathname, { locale: code })
@@ -62,7 +65,7 @@ export default function LangSwitcher() {
           <div style={{
             position: 'absolute',
             top: '100%',
-            right: 0,
+            ...(isRTL ? { left: 0 } : { right: 0 }),
             marginTop: 8,
             background: '#1e293b',
             border: '1px solid rgba(255,255,255,0.1)',
