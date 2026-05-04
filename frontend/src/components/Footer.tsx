@@ -39,34 +39,20 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Nav links */}
-          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', color: '#334155', textTransform: 'uppercase', marginBottom: 12 }}>
-                Project
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {LINKS.map(l => (
-                  <Link key={l.href} href={l.href} style={{ color: l.color, fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85 }}>
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', color: '#334155', textTransform: 'uppercase', marginBottom: 12 }}>
-                Community
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {SOCIAL.map(s => (
-                  <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
-                    style={{ color: s.color, fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85 }}>
-                    {s.label}
-                  </a>
-                ))}
-              </div>
-            </div>
+          {/* Nav links — one row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+            {LINKS.map(l => (
+              <Link key={l.href} href={l.href} style={{ color: l.color, fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85 }}>
+                {l.label}
+              </Link>
+            ))}
+            <span style={{ color: '#1e293b' }}>·</span>
+            {SOCIAL.map(s => (
+              <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
+                style={{ color: s.color, fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85 }}>
+                {s.label}
+              </a>
+            ))}
           </div>
         </div>
 
