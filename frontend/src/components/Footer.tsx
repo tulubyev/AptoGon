@@ -45,9 +45,14 @@ export default function Footer() {
                 <span style={{ background: 'linear-gradient(90deg,#7c3aed,#db2777)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GON</span>
               </span>
             </Link>
-            <p style={{ fontSize: 12, color: '#475569', marginTop: 6, maxWidth: 200, lineHeight: 1.5 }}>
-              Human Firewall for the Internet
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, flexWrap: 'wrap' }}>
+              <p style={{ fontSize: 12, color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                Human Firewall for the Internet
+              </p>
+              <p style={{ fontSize: 12, color: '#334155', margin: 0 }}>
+                © 2025–26 Homo Sapience Internet · Open Source · MIT License
+              </p>
+            </div>
           </div>
 
           {/* Nav links — one row */}
@@ -69,16 +74,12 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom row — copyright above the divider */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          <p style={{ fontSize: 12, color: '#334155', margin: 0 }}>
-            © 2025–26 Homo Sapience Internet · Open Source · MIT License
-          </p>
+        {/* Bottom divider + version */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 24, paddingTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
           <p style={{ fontSize: 12, color: '#1e293b', margin: 0 }}>
             v0.2.0 · Gonka AI · Aptos Testnet
           </p>
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
 
       </div>
     </footer>
