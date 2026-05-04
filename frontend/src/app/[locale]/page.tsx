@@ -83,7 +83,7 @@ export default function Home() {
           <p style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.6rem', color: '#111827', marginBottom: 8 }}>{t('tech_title')}</p>
           <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 40 }}>{t('tech_subtitle')}</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {cards.map(card => (
               <button
                 key={card.id}
@@ -109,15 +109,15 @@ export default function Home() {
 
           <div style={{ display: 'flex', gap: 0, alignItems: 'stretch', flexWrap: 'nowrap', overflowX: 'auto' }}>
             {steps.map((s, i) => (
-              <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 180 }}>
-                <div style={{ background: s.bg, borderRadius: 20, padding: '28px 20px', color: '#fff', flex: 1 }}>
+              <div key={s.n} style={{ display: 'flex', alignItems: 'stretch', flex: 1, minWidth: 180 }}>
+                <div style={{ background: s.bg, borderRadius: 20, padding: '28px 20px', color: '#fff', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>{s.icon}</div>
                   <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 6 }}>{t('step')} {s.n}</div>
                   <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 8 }}>{s.title}</div>
-                  <p style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.5 }}>{s.desc}</p>
+                  <p style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.5, margin: 0 }}>{s.desc}</p>
                 </div>
                 {i < steps.length - 1 && (
-                  <div style={{ padding: '0 8px', color: '#94a3b8', fontSize: 20, fontWeight: 900, flexShrink: 0 }}>→</div>
+                  <div style={{ padding: '0 8px', color: '#94a3b8', fontSize: 20, fontWeight: 900, flexShrink: 0, display: 'flex', alignItems: 'center' }}>→</div>
                 )}
               </div>
             ))}
@@ -138,30 +138,30 @@ export default function Home() {
           <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 40 }}>{t('join_subtitle')}</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            <Link href="/manifest" style={{ textDecoration: 'none', display: 'block', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(124,58,237,0.15)' }}>
-              <div style={{ background: 'linear-gradient(145deg, #0f172a, #1e1b4b)', padding: '36px 28px' }}>
+            <Link href="/manifest" style={{ textDecoration: 'none', display: 'flex', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(124,58,237,0.15)' }}>
+              <div style={{ background: 'linear-gradient(145deg, #0f172a, #1e1b4b)', padding: '36px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ fontSize: 40, marginBottom: 16 }}>📜</div>
                 <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#fff', marginBottom: 8 }}>{t('manifest_card.title')}</div>
-                <p style={{ fontSize: '0.875rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: 20 }}>{t('manifest_card.body')}</p>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('manifest_card.cta')}</span>
+                <p style={{ fontSize: '0.875rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: 0, flex: 1 }}>{t('manifest_card.body')}</p>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 20, display: 'block' }}>{t('manifest_card.cta')}</span>
               </div>
             </Link>
 
-            <Link id="developers" href="/developers" style={{ textDecoration: 'none', display: 'block', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(8,145,178,0.15)' }}>
-              <div style={{ background: 'linear-gradient(145deg, #0c1a2e, #0a2540)', padding: '36px 28px' }}>
+            <Link id="developers" href="/developers" style={{ textDecoration: 'none', display: 'flex', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(8,145,178,0.15)' }}>
+              <div style={{ background: 'linear-gradient(145deg, #0c1a2e, #0a2540)', padding: '36px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ fontSize: 40, marginBottom: 16 }}>⚡</div>
                 <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#fff', marginBottom: 8 }}>{t('developers_card.title')}</div>
-                <p style={{ fontSize: '0.875rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: 20 }}>{t('developers_card.body')}</p>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#67e8f9', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('developers_card.cta')}</span>
+                <p style={{ fontSize: '0.875rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: 0, flex: 1 }}>{t('developers_card.body')}</p>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#67e8f9', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 20, display: 'block' }}>{t('developers_card.cta')}</span>
               </div>
             </Link>
 
-            <Link id="donate" href="/donate" style={{ textDecoration: 'none', display: 'block', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(124,58,237,0.1)' }}>
-              <div style={{ background: 'linear-gradient(145deg, #2d1b69, #4c1d95)', padding: '36px 28px' }}>
+            <Link id="donate" href="/donate" style={{ textDecoration: 'none', display: 'flex', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 20px rgba(124,58,237,0.1)' }}>
+              <div style={{ background: 'linear-gradient(145deg, #2d1b69, #4c1d95)', padding: '36px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ fontSize: 40, marginBottom: 16 }}>🤝</div>
                 <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#fff', marginBottom: 8 }}>{t('donate_card.title')}</div>
-                <p style={{ fontSize: '0.875rem', color: '#c4b5fd', lineHeight: 1.6, marginBottom: 20 }}>{t('donate_card.body')}</p>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#e9d5ff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('donate_card.cta')}</span>
+                <p style={{ fontSize: '0.875rem', color: '#c4b5fd', lineHeight: 1.6, marginBottom: 0, flex: 1 }}>{t('donate_card.body')}</p>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#e9d5ff', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 20, display: 'block' }}>{t('donate_card.cta')}</span>
               </div>
             </Link>
           </div>
