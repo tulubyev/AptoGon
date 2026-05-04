@@ -2,8 +2,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { GestureCanvas, TouchEventData } from '@/components/GestureCanvas'
-import { Progress } from '@/components/ui/progress'
-import { CheckCircle2, XCircle, Loader2, Brain, Key, Link2, Shield, ArrowRight, Pencil, Sparkles } from 'lucide-react'
 
 type Stage = 'draw' | 'analyzing' | 'success' | 'failed' | 'bonding' | 'complete'
 
@@ -33,6 +31,53 @@ interface VerifyResult {
   debug?: DebugPattern
 }
 
+const STEPS = [
+  {
+    num: '1',
+    color: '#7c3aed',
+    bg: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+    icon: '✏️',
+    title: 'Нарисуй символ',
+    desc: 'Любой — букву, цифру, завиток. AI смотрит как ты рисуешь, не что',
+  },
+  {
+    num: '2',
+    color: '#db2777',
+    bg: 'linear-gradient(135deg, #db2777, #f472b6)',
+    icon: '🧠',
+    title: 'Gonka AI',
+    desc: 'Анализирует ритм, скорость, паузы. Боты двигаются слишком ровно',
+  },
+  {
+    num: '3',
+    color: '#0891b2',
+    bg: 'linear-gradient(135deg, #0891b2, #22d3ee)',
+    icon: '🔑',
+    title: 'Твой DID',
+    desc: 'Цифровой ключ создаётся в браузере. Анонимный ID — без имени',
+  },
+  {
+    num: '4',
+    color: '#2563eb',
+    bg: 'linear-gradient(135deg, #2563eb, #60a5fa)',
+    icon: '⛓️',
+    title: 'Aptos',
+    desc: 'Факт верификации записывается в блокчейн. Не данные — криптодоказательство',
+  },
+]
+
+const ProgressBar = ({ value, color = '#7c3aed' }: { value: number; color?: string }) => (
+  <div style={{ background: 'rgba(0,0,0,0.08)', borderRadius: 99, height: 10, overflow: 'hidden' }}>
+    <div style={{
+      width: `${Math.min(100, Math.max(0, value))}%`,
+      height: '100%',
+      background: color,
+      borderRadius: 99,
+      transition: 'width 0.5s ease',
+    }} />
+  </div>
+)
+
 export default function VerifyPage() {
   const [stage, setStage] = useState<Stage>('draw')
   const [result, setResult] = useState<VerifyResult | null>(null)
@@ -54,7 +99,6 @@ export default function VerifyPage() {
       if (data.passed && data.did) {
         localStorage.setItem('aptogon_did', data.did)
         if (data.private_key_b64) localStorage.setItem('aptogon_key', data.private_key_b64)
-        // Save in HSI browser extension format
         localStorage.setItem('hsi_did', data.did)
         const hsiCred = JSON.stringify({
           ...(data.credential ?? {}),
@@ -70,7 +114,6 @@ export default function VerifyPage() {
           },
         })
         localStorage.setItem('hsi_credential', hsiCred)
-        // Fire custom event so content.js can push to extension storage immediately
         window.dispatchEvent(new CustomEvent('hsi:verified', {
           detail: { cred: hsiCred, did: data.did }
         }))
@@ -94,83 +137,100 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ background: '#f8fafc', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
       {/* ── HERO ── */}
-      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 px-6 py-12 text-white text-center">
-        <h1 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
-          Подтверди, что ты <span className="text-cyan-400">человек</span>
+      <div style={{
+        background: 'linear-gradient(135deg, #ede9fe 0%, #f0f9ff 55%, #fdf4ff 100%)',
+        padding: '56px 24px 48px',
+        textAlign: 'center',
+        borderBottom: '1px solid rgba(124,58,237,0.1)',
+      }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
+          borderRadius: 99, padding: '6px 16px', marginBottom: 20,
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#7c3aed' }}>🛡️ Gonka AI · Aptos Testnet</span>
+        </div>
+        <h1 style={{
+          fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, lineHeight: 1.15,
+          margin: '0 0 16px', color: '#0f172a', letterSpacing: '-0.03em',
+        }}>
+          Подтверди, что ты{' '}
+          <span style={{ background: 'linear-gradient(90deg,#7c3aed,#db2777)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            человек
+          </span>
         </h1>
-        <p className="text-blue-200 text-lg max-w-lg mx-auto">
+        <p style={{ fontSize: 18, color: '#475569', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
           Без паспорта · Без камеры · Без личных данных
         </p>
       </div>
 
-      {/* ── КАК ЭТО РАБОТАЕТ ── */}
-      <div className="px-6 py-10 bg-gray-50">
-        <p className="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Как работает верификация</p>
-        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-3">
-
-          <div className="bg-purple-600 rounded-2xl p-5 text-white">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-              <Pencil className="w-5 h-5" />
+      {/* ── ШАГИ ── */}
+      <div style={{ padding: '48px 24px', background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+        <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 28 }}>
+          Как работает верификация
+        </p>
+        <div style={{
+          maxWidth: 900, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16,
+        }}>
+          {STEPS.map((s, i) => (
+            <div key={i} style={{
+              background: s.bg, borderRadius: 20, padding: '24px 20px', color: '#fff',
+              boxShadow: `0 4px 24px ${s.color}30`,
+            }}>
+              <div style={{
+                width: 40, height: 40, background: 'rgba(255,255,255,0.2)', borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 20, marginBottom: 14,
+              }}>
+                {s.icon}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, marginBottom: 6 }}>
+                Шаг {s.num}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 900, marginBottom: 8 }}>{s.title}</div>
+              <p style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.5, margin: 0 }}>{s.desc}</p>
             </div>
-            <div className="text-xs font-bold uppercase tracking-wide opacity-70 mb-1">Шаг 1</div>
-            <div className="font-black text-lg mb-2">Нарисуй символ</div>
-            <p className="text-sm opacity-80">Любой — букву, цифру, завиток. AI смотрит <em>как</em> ты рисуешь, не <em>что</em></p>
-          </div>
-
-          <div className="bg-pink-500 rounded-2xl p-5 text-white">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-              <Brain className="w-5 h-5" />
-            </div>
-            <div className="text-xs font-bold uppercase tracking-wide opacity-70 mb-1">Шаг 2</div>
-            <div className="font-black text-lg mb-2">Gonka AI</div>
-            <p className="text-sm opacity-80">Анализирует ритм, скорость, паузы. Боты двигаются слишком ровно — это их выдаёт</p>
-          </div>
-
-          <div className="bg-cyan-500 rounded-2xl p-5 text-white">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-              <Key className="w-5 h-5" />
-            </div>
-            <div className="text-xs font-bold uppercase tracking-wide opacity-70 mb-1">Шаг 3</div>
-            <div className="font-black text-lg mb-2">Твой DID</div>
-            <p className="text-sm opacity-80">Цифровой ключ создаётся прямо в браузере. Это твой анонимный ID — как паспорт, но без имени</p>
-          </div>
-
-          <div className="bg-blue-600 rounded-2xl p-5 text-white">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-              <Link2 className="w-5 h-5" />
-            </div>
-            <div className="text-xs font-bold uppercase tracking-wide opacity-70 mb-1">Шаг 4</div>
-            <div className="font-black text-lg mb-2">Aptos</div>
-            <p className="text-sm opacity-80">Факт верификации записывается в блокчейн. Не данные — только криптодоказательство</p>
-          </div>
-
+          ))}
         </div>
       </div>
 
-      {/* ── ОСНОВНОЙ КОНТЕНТ ── */}
-      <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
+      {/* ── MAIN CONTENT ── */}
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px 60px' }}>
 
         {/* ══ DRAW / FAILED ══ */}
         {(stage === 'draw' || stage === 'failed') && (<>
 
           {/* Canvas Card */}
-          <div className="rounded-3xl border-2 border-dashed border-purple-300 bg-purple-50 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center">
-                <Pencil className="w-5 h-5 text-white" />
-              </div>
+          <div style={{
+            background: '#fff', borderRadius: 24, padding: 28,
+            border: '2px dashed rgba(124,58,237,0.3)',
+            boxShadow: '0 4px 32px rgba(124,58,237,0.08)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{
+                width: 44, height: 44, background: 'linear-gradient(135deg,#7c3aed,#a855f7)',
+                borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 20, flexShrink: 0,
+              }}>✏️</div>
               <div>
-                <h2 className="font-black text-gray-900 text-lg">Нарисуй что-нибудь</h2>
-                <p className="text-gray-500 text-sm">мышью или пальцем — любой символ</p>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#0f172a' }}>Нарисуй что-нибудь</h2>
+                <p style={{ margin: 0, fontSize: 13, color: '#94a3b8', marginTop: 2 }}>мышью или пальцем — любой символ</p>
               </div>
             </div>
+
             <GestureCanvas onComplete={handleGesture} />
-            <div className="mt-4 flex flex-wrap gap-2">
+
+            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {['ритм движения', 'скорость', 'паузы', 'нажатие', 'исправления'].map(tag => (
-                <span key={tag} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                <span key={tag} style={{
+                  padding: '4px 12px', background: 'rgba(124,58,237,0.08)',
+                  color: '#7c3aed', borderRadius: 99, fontSize: 12, fontWeight: 600,
+                  border: '1px solid rgba(124,58,237,0.15)',
+                }}>
                   {tag}
                 </span>
               ))}
@@ -179,46 +239,69 @@ export default function VerifyPage() {
 
           {/* Failed result */}
           {stage === 'failed' && result && (
-            <div className="space-y-3">
-              <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <XCircle className="w-8 h-8 text-red-500 flex-shrink-0" />
+            <div style={{ marginTop: 20 }}>
+              <div style={{
+                background: '#fff', borderRadius: 24, padding: 24,
+                border: '2px solid #fecaca', boxShadow: '0 4px 24px rgba(239,68,68,0.08)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                  <div style={{ fontSize: 32, flexShrink: 0 }}>❌</div>
                   <div>
-                    <h3 className="font-black text-red-700 text-lg">Не прошло</h3>
-                    <p className="text-red-500 text-sm">{result.reasoning}</p>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#dc2626' }}>Не прошло</h3>
+                    <p style={{ margin: 0, fontSize: 13, color: '#ef4444', marginTop: 4 }}>{result.reasoning}</p>
                   </div>
                 </div>
-                <div className="mb-2 flex justify-between text-sm font-medium">
-                  <span className="text-gray-600">
-                    Уверенность AI {result.via_fallback && <span className="text-orange-500 text-xs">(fallback)</span>}
-                  </span>
-                  <span className="text-red-600 font-bold">{Math.round(result.confidence * 100)}%</span>
+
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, color: '#64748b' }}>
+                      Уверенность AI {result.via_fallback && <span style={{ color: '#f97316', fontSize: 11 }}>(fallback)</span>}
+                    </span>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: '#dc2626' }}>{Math.round(result.confidence * 100)}%</span>
+                  </div>
+                  <ProgressBar value={result.confidence * 100} color="#ef4444" />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: '#94a3b8' }}>
+                    <span>0%</span>
+                    <span style={{ color: '#f97316', fontWeight: 600 }}>порог {result.via_fallback ? '70' : '85'}%</span>
+                    <span style={{ color: '#22c55e', fontWeight: 600 }}>100%</span>
+                  </div>
                 </div>
-                <Progress value={result.confidence * 100} className="h-3 mb-2" />
-                <div className="flex justify-between text-xs text-gray-400 mb-4">
-                  <span>0%</span>
-                  <span className="text-orange-400 font-medium">порог {result.via_fallback ? '70' : '85'}%</span>
-                  <span className="text-green-500 font-medium">100%</span>
-                </div>
+
                 {result.anomalies && result.anomalies.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-1">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
                     {result.anomalies.map(a => (
-                      <span key={a} className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">{a}</span>
+                      <span key={a} style={{
+                        fontSize: 11, padding: '3px 10px', borderRadius: 99,
+                        background: '#fee2e2', color: '#dc2626',
+                      }}>{a}</span>
                     ))}
                   </div>
                 )}
-                <p className="text-sm text-gray-600 bg-white rounded-xl p-3 border border-red-100">
+
+                <div style={{
+                  background: '#fef2f2', borderRadius: 14, padding: '12px 16px',
+                  fontSize: 13, color: '#64748b', border: '1px solid #fecaca', lineHeight: 1.6,
+                }}>
                   💡 <strong>Совет:</strong> рисуй дольше (1–3 сек), делай паузы между точками — неравномерность ритма сигнализирует о человеке
-                </p>
+                </div>
               </div>
 
               {/* Debug panel */}
               {result.debug && (
-                <details className="rounded-2xl border border-gray-200 bg-gray-50 text-xs overflow-hidden">
-                  <summary className="px-4 py-3 cursor-pointer font-mono text-gray-500 hover:text-gray-700 select-none">
+                <details style={{
+                  marginTop: 12, borderRadius: 16, border: '1px solid #e2e8f0',
+                  background: '#f8fafc', overflow: 'hidden',
+                }}>
+                  <summary style={{
+                    padding: '10px 16px', cursor: 'pointer', fontFamily: 'monospace',
+                    fontSize: 12, color: '#64748b', userSelect: 'none',
+                  }}>
                     🔬 Данные паттерна (отладка)
                   </summary>
-                  <div className="px-4 pb-4 grid grid-cols-2 gap-x-6 gap-y-1 font-mono">
+                  <div style={{
+                    padding: '12px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    gap: '4px 24px', fontFamily: 'monospace', fontSize: 11,
+                  }}>
                     {[
                       ['velocity_std', result.debug.velocity_std, '> 0.01 = human'],
                       ['velocity_mean', result.debug.velocity_mean, ''],
@@ -229,10 +312,12 @@ export default function VerifyPage() {
                       ['points', result.debug.point_count, '> 10'],
                       ['motor_diff', String(result.debug.possible_motor_difficulty), ''],
                     ].map(([k, v, hint]) => (
-                      <div key={String(k)} className="flex gap-2 items-baseline py-0.5 border-b border-gray-100">
-                        <span className="text-gray-400 w-28 flex-shrink-0">{k}</span>
-                        <span className="font-bold text-gray-700">{typeof v === 'number' ? v.toFixed(4) : String(v)}</span>
-                        {hint && <span className="text-gray-400 text-[10px] ml-1">{hint}</span>}
+                      <div key={String(k)} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '3px 0', borderBottom: '1px solid #f1f5f9' }}>
+                        <span style={{ color: '#94a3b8', width: 110, flexShrink: 0 }}>{k}</span>
+                        <span style={{ fontWeight: 700, color: '#374151' }}>
+                          {typeof v === 'number' ? v.toFixed(4) : String(v)}
+                        </span>
+                        {hint && <span style={{ color: '#94a3b8', fontSize: 10 }}>{hint}</span>}
                       </div>
                     ))}
                   </div>
@@ -242,31 +327,46 @@ export default function VerifyPage() {
           )}
 
           {error && (
-            <div className="rounded-2xl bg-orange-50 border border-orange-200 p-4">
-              <p className="text-orange-700 text-sm font-mono">{error}</p>
+            <div style={{
+              marginTop: 16, borderRadius: 16, background: '#fff7ed',
+              border: '1px solid #fed7aa', padding: '12px 16px',
+            }}>
+              <p style={{ margin: 0, fontSize: 13, fontFamily: 'monospace', color: '#c2410c' }}>{error}</p>
             </div>
           )}
         </>)}
 
         {/* ══ ANALYZING ══ */}
         {stage === 'analyzing' && (
-          <div className="rounded-3xl border-2 border-pink-200 bg-pink-50 p-10 text-center">
-            <div className="w-16 h-16 bg-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
+          <div style={{
+            background: '#fff', borderRadius: 24, padding: '48px 32px',
+            textAlign: 'center', border: '2px solid rgba(219,39,119,0.2)',
+            boxShadow: '0 4px 32px rgba(219,39,119,0.08)',
+          }}>
+            <div style={{
+              width: 64, height: 64,
+              background: 'linear-gradient(135deg,#db2777,#f472b6)',
+              borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 32, margin: '0 auto 20px',
+              animation: 'spin 1s linear infinite',
+            }}>
+              <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⚙️</span>
             </div>
-            <h2 className="text-2xl font-black text-gray-900 mb-1">Gonka AI анализирует...</h2>
-            <p className="text-gray-500 text-sm mb-8">Модель изучает паттерн твоего жеста</p>
-            <div className="max-w-xs mx-auto space-y-3 text-left">
+            <h2 style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 900, color: '#0f172a' }}>Gonka AI анализирует...</h2>
+            <p style={{ margin: '0 0 32px', fontSize: 14, color: '#94a3b8' }}>Модель изучает паттерн твоего жеста</p>
+            <div style={{ maxWidth: 280, margin: '0 auto', textAlign: 'left' }}>
               {[
-                { label: 'Вариативность скорости', color: 'bg-purple-400' },
-                { label: 'Энтропия пауз',          color: 'bg-pink-400'   },
-                { label: 'Количество поправок',    color: 'bg-rose-400'   },
-                { label: 'Нерегулярность ритма',   color: 'bg-orange-400' },
-                { label: 'Генерация ExpressionProof', color: 'bg-green-400' },
+                { label: 'Вариативность скорости', color: '#7c3aed' },
+                { label: 'Энтропия пауз',          color: '#db2777' },
+                { label: 'Количество поправок',    color: '#e11d48' },
+                { label: 'Нерегулярность ритма',   color: '#f97316' },
+                { label: 'Генерация ExpressionProof', color: '#059669' },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm text-gray-600">
-                  <div className={`w-2.5 h-2.5 rounded-full ${s.color} animate-pulse flex-shrink-0`}
-                    style={{ animationDelay: `${i * 0.25}s` }} />
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#64748b', marginBottom: 12 }}>
+                  <div style={{
+                    width: 10, height: 10, borderRadius: '50%', background: s.color, flexShrink: 0,
+                    animationDelay: `${i * 0.25}s`,
+                  }} />
                   {s.label}
                 </div>
               ))}
@@ -276,112 +376,151 @@ export default function VerifyPage() {
 
         {/* ══ SUCCESS ══ */}
         {stage === 'success' && result && (
-          <div className="space-y-4">
-
-            {/* Главный результат */}
-            <div className="rounded-3xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 text-white">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
+          <div>
+            {/* Main result */}
+            <div style={{
+              background: 'linear-gradient(135deg,#059669,#10b981)',
+              borderRadius: 24, padding: '28px 28px', color: '#fff',
+              boxShadow: '0 8px 40px rgba(5,150,105,0.25)', marginBottom: 16,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                <div style={{
+                  width: 56, height: 56, background: 'rgba(255,255,255,0.2)',
+                  borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 28, flexShrink: 0,
+                }}>✅</div>
                 <div>
-                  <h2 className="text-2xl font-black">Ты — человек ✓</h2>
-                  <p className="text-green-100 text-sm">Gonka AI подтвердил верификацию</p>
+                  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Ты — человек ✓</h2>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.8 }}>Gonka AI подтвердил верификацию</p>
                 </div>
               </div>
-              <div className="bg-white/20 rounded-2xl p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-green-100">Уверенность AI</span>
-                  <span className="font-black text-lg">{Math.round(result.confidence * 100)}%</span>
+              <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 16, padding: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13 }}>
+                  <span style={{ opacity: 0.85 }}>Уверенность AI</span>
+                  <span style={{ fontWeight: 900, fontSize: 18 }}>{Math.round(result.confidence * 100)}%</span>
                 </div>
-                <Progress value={result.confidence * 100} className="h-3 bg-white/30" />
-                <div className="flex justify-between text-xs mt-2 text-green-200">
+                <ProgressBar value={result.confidence * 100} color="rgba(255,255,255,0.9)" />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, opacity: 0.7 }}>
                   <span>0%</span><span>порог 70%</span><span>85%+ отлично</span><span>100%</span>
                 </div>
               </div>
             </div>
 
             {/* DID */}
-            <div className="rounded-3xl border-2 border-cyan-200 bg-cyan-50 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Key className="w-5 h-5 text-white" />
-                </div>
+            <div style={{
+              background: '#fff', borderRadius: 24, padding: 24,
+              border: '2px solid rgba(8,145,178,0.2)', marginBottom: 16,
+              boxShadow: '0 4px 24px rgba(8,145,178,0.07)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{
+                  width: 44, height: 44, background: 'linear-gradient(135deg,#0891b2,#22d3ee)',
+                  borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, flexShrink: 0,
+                }}>🔑</div>
                 <div>
-                  <h3 className="font-black text-gray-900">Твой цифровой ID создан</h3>
-                  <p className="text-cyan-600 text-xs font-medium">W3C did:key — международный стандарт</p>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#0f172a' }}>Твой цифровой ID создан</h3>
+                  <p style={{ margin: '3px 0 0', fontSize: 12, color: '#0891b2', fontWeight: 600 }}>W3C did:key — международный стандарт</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl p-3 border border-cyan-200 mb-4">
-                <p className="text-xs text-gray-400 mb-1">Идентификатор (DID):</p>
-                <p className="font-mono text-xs text-gray-700 break-all leading-relaxed">{result.did?.slice(0, 50)}...</p>
+              <div style={{
+                background: '#f0f9ff', borderRadius: 14, padding: 12,
+                border: '1px solid rgba(8,145,178,0.2)', marginBottom: 16,
+              }}>
+                <p style={{ margin: '0 0 4px', fontSize: 11, color: '#94a3b8' }}>Идентификатор (DID):</p>
+                <p style={{ margin: 0, fontFamily: 'monospace', fontSize: 11, color: '#0f172a', wordBreak: 'break-all', lineHeight: 1.6 }}>
+                  {result.did?.slice(0, 50)}...
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                <div className="bg-white rounded-xl p-3 border border-cyan-100">
-                  <span className="text-cyan-500 font-bold block mb-0.5">Что это?</span>
-                  Как паспорт, но цифровой и полностью анонимный
-                </div>
-                <div className="bg-white rounded-xl p-3 border border-cyan-100">
-                  <span className="text-cyan-500 font-bold block mb-0.5">Где хранится?</span>
-                  Только в твоём браузере (localStorage). Нигде на серверах
-                </div>
-                <div className="bg-white rounded-xl p-3 border border-cyan-100">
-                  <span className="text-cyan-500 font-bold block mb-0.5">Приватный ключ</span>
-                  Только у тебя. Никто не может его использовать
-                </div>
-                <div className="bg-white rounded-xl p-3 border border-cyan-100">
-                  <span className="text-cyan-500 font-bold block mb-0.5">Генерируется</span>
-                  Прямо в браузере, за 1мс, без запроса на сервер
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[
+                  { label: 'Что это?', value: 'Как паспорт, но цифровой и полностью анонимный' },
+                  { label: 'Где хранится?', value: 'Только в твоём браузере (localStorage). Нигде на серверах' },
+                  { label: 'Приватный ключ', value: 'Только у тебя. Никто не может его использовать' },
+                  { label: 'Генерируется', value: 'Прямо в браузере, за 1мс, без запроса на сервер' },
+                ].map(item => (
+                  <div key={item.label} style={{
+                    background: '#f0f9ff', borderRadius: 12, padding: '10px 12px',
+                    border: '1px solid rgba(8,145,178,0.12)',
+                  }}>
+                    <span style={{ fontSize: 11, color: '#0891b2', fontWeight: 700, display: 'block', marginBottom: 4 }}>{item.label}</span>
+                    <span style={{ fontSize: 11, color: '#475569', lineHeight: 1.5 }}>{item.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Aptos */}
-            <div className="rounded-3xl border-2 border-blue-200 bg-blue-50 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Link2 className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-black text-gray-900">Запись в блокчейн Aptos</h3>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${result.tx_hash ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+            <div style={{
+              background: '#fff', borderRadius: 24, padding: 24,
+              border: '2px solid rgba(37,99,235,0.2)', marginBottom: 16,
+              boxShadow: '0 4px 24px rgba(37,99,235,0.07)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{
+                  width: 44, height: 44, background: 'linear-gradient(135deg,#2563eb,#60a5fa)',
+                  borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, flexShrink: 0,
+                }}>⛓️</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#0f172a' }}>Запись в блокчейн Aptos</h3>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99,
+                    background: result.tx_hash ? '#dcfce7' : '#f1f5f9',
+                    color: result.tx_hash ? '#16a34a' : '#64748b',
+                  }}>
                     {result.tx_hash ? 'on-chain ✓' : 'local store'}
                   </span>
                 </div>
               </div>
               {result.tx_hash ? (
-                <div className="bg-white rounded-xl p-3 border border-blue-200 mb-3">
-                  <p className="text-xs text-gray-400 mb-1">Transaction hash:</p>
-                  <p className="font-mono text-xs text-blue-700 break-all">{result.tx_hash}</p>
+                <div style={{ background: '#eff6ff', borderRadius: 12, padding: 12, border: '1px solid rgba(37,99,235,0.2)', marginBottom: 12 }}>
+                  <p style={{ margin: '0 0 4px', fontSize: 11, color: '#94a3b8' }}>Transaction hash:</p>
+                  <p style={{ margin: 0, fontFamily: 'monospace', fontSize: 11, color: '#2563eb', wordBreak: 'break-all' }}>{result.tx_hash}</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl p-3 border border-blue-100 mb-3 text-sm text-gray-500">
-                  Credential сохранён локально. Добавь <code className="bg-gray-100 px-1 rounded">APTOS_PRIVATE_KEY</code> для on-chain записи.
+                <div style={{ background: '#f8fafc', borderRadius: 12, padding: 12, border: '1px solid #e2e8f0', marginBottom: 12, fontSize: 13, color: '#64748b' }}>
+                  Credential сохранён локально. Добавь <code style={{ background: '#f1f5f9', padding: '1px 6px', borderRadius: 6, fontFamily: 'monospace' }}>APTOS_PRIVATE_KEY</code> для on-chain записи.
                 </div>
               )}
-              <p className="text-xs text-blue-700 bg-blue-100 rounded-xl p-3">
+              <div style={{ background: '#eff6ff', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#2563eb', lineHeight: 1.6 }}>
                 📌 В блокчейн записан только <strong>факт</strong> верификации — никаких личных данных, только хеш
-              </p>
+              </div>
             </div>
 
-            {/* Поручительство */}
-            <div className="rounded-3xl border-2 border-indigo-200 bg-indigo-50 p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
+            {/* Bonding CTA */}
+            <div style={{
+              background: '#fff', borderRadius: 24, padding: 24,
+              border: '2px solid rgba(99,102,241,0.2)',
+              boxShadow: '0 4px 24px rgba(99,102,241,0.08)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                <div style={{
+                  width: 44, height: 44, background: 'linear-gradient(135deg,#6366f1,#a5b4fc)',
+                  borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, flexShrink: 0,
+                }}>🛡️</div>
                 <div>
-                  <h3 className="font-black text-gray-900">Последний шаг — поручительство</h3>
-                  <p className="text-indigo-600 text-xs">3 верифицированных человека подтверждают тебя</p>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#0f172a' }}>Последний шаг — поручительство</h3>
+                  <p style={{ margin: '3px 0 0', fontSize: 12, color: '#6366f1', fontWeight: 600 }}>3 верифицированных человека подтверждают тебя</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-4">
+              <p style={{ fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.6 }}>
                 Это защищает от ботов, которые прошли жест-тест. Поручители — живые люди из сети HSI, которые ручаются своей репутацией.
               </p>
-              <button onClick={simulateBonds}
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg shadow-indigo-200">
-                🤝 Запросить поручительство
-                <ArrowRight className="w-5 h-5" />
+              <button
+                onClick={simulateBonds}
+                style={{
+                  width: '100%', padding: '16px 24px',
+                  background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                  color: '#fff', fontWeight: 900, fontSize: 15, border: 'none',
+                  borderRadius: 16, cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', gap: 10,
+                  boxShadow: '0 4px 20px rgba(99,102,241,0.3)',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                }}
+              >
+                🤝 Запросить поручительство →
               </button>
             </div>
           </div>
@@ -389,65 +528,113 @@ export default function VerifyPage() {
 
         {/* ══ BONDING ══ */}
         {stage === 'bonding' && (
-          <div className="rounded-3xl border-2 border-indigo-200 bg-indigo-50 p-10 text-center">
-            <h2 className="text-2xl font-black text-gray-900 mb-2">Ожидаем поручителей...</h2>
-            <p className="text-gray-500 text-sm mb-10">Gonka BondMatcher подбирает людей по репутации в сети</p>
-            <div className="flex justify-center gap-8 mb-8">
+          <div style={{
+            background: '#fff', borderRadius: 24, padding: '48px 32px',
+            textAlign: 'center', border: '2px solid rgba(99,102,241,0.2)',
+            boxShadow: '0 4px 32px rgba(99,102,241,0.08)',
+          }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 900, color: '#0f172a' }}>Ожидаем поручителей...</h2>
+            <p style={{ margin: '0 0 40px', fontSize: 13, color: '#94a3b8' }}>Gonka BondMatcher подбирает людей по репутации в сети</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 32 }}>
               {[1, 2, 3].map(i => (
-                <div key={i} className={`flex flex-col items-center gap-3 transition-all duration-500 ${bondCount >= i ? 'scale-110' : 'opacity-40'}`}>
-                  <div className={`w-16 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl transition-all duration-500
-                    ${bondCount >= i ? 'bg-green-100 border-green-400 shadow-lg shadow-green-100' : 'bg-white border-gray-200'}`}>
+                <div key={i} style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+                  transition: 'transform 0.5s, opacity 0.5s',
+                  transform: bondCount >= i ? 'scale(1.1)' : 'scale(1)',
+                  opacity: bondCount >= i ? 1 : 0.4,
+                }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: 20, border: '2px solid',
+                    borderColor: bondCount >= i ? '#22c55e' : '#e2e8f0',
+                    background: bondCount >= i ? '#dcfce7' : '#f8fafc',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, transition: 'all 0.5s',
+                    boxShadow: bondCount >= i ? '0 4px 20px rgba(34,197,94,0.2)' : 'none',
+                  }}>
                     {bondCount >= i ? '✅' : '👤'}
                   </div>
-                  <span className={`text-xs font-bold ${bondCount >= i ? 'text-green-600' : 'text-gray-400'}`}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: bondCount >= i ? '#16a34a' : '#94a3b8' }}>
                     {bondCount >= i ? 'Поручился' : '...'}
                   </span>
                 </div>
               ))}
             </div>
-            <Progress value={(bondCount / 3) * 100} className="max-w-xs mx-auto h-3 mb-3" />
-            <p className="text-gray-400 text-sm">{bondCount} из 3</p>
+            <div style={{ maxWidth: 240, margin: '0 auto' }}>
+              <ProgressBar value={(bondCount / 3) * 100} color="#6366f1" />
+            </div>
+            <p style={{ marginTop: 12, fontSize: 13, color: '#94a3b8' }}>{bondCount} из 3</p>
           </div>
         )}
 
         {/* ══ COMPLETE ══ */}
         {stage === 'complete' && (
-          <div className="space-y-4">
-            <div className="rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 text-white text-center">
-              <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-5">
-                <Sparkles className="w-10 h-10" />
-              </div>
-              <h2 className="text-3xl font-black mb-2">Верификация завершена!</h2>
-              <p className="text-blue-200 mb-6">Ты — полноправный участник сети HSI</p>
-              <div className="grid grid-cols-3 gap-3">
+          <div>
+            {/* Main complete card */}
+            <div style={{
+              background: 'linear-gradient(135deg,#2563eb,#6366f1,#7c3aed)',
+              borderRadius: 24, padding: '40px 32px', color: '#fff', textAlign: 'center',
+              boxShadow: '0 8px 48px rgba(99,102,241,0.3)', marginBottom: 16,
+            }}>
+              <div style={{
+                width: 80, height: 80, background: 'rgba(255,255,255,0.2)',
+                borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 40, margin: '0 auto 20px',
+              }}>✨</div>
+              <h2 style={{ margin: '0 0 8px', fontSize: 28, fontWeight: 900 }}>Верификация завершена!</h2>
+              <p style={{ margin: '0 0 28px', fontSize: 15, opacity: 0.8 }}>Ты — полноправный участник сети HSI</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
                 {[
                   { emoji: '🧠', title: 'Gonka AI', desc: 'жест проверен' },
                   { emoji: '🔑', title: 'DID создан', desc: 'в браузере' },
                   { emoji: '⛓️', title: 'Aptos', desc: 'факт записан' },
                 ].map(b => (
-                  <div key={b.title} className="bg-white/15 rounded-2xl p-3">
-                    <div className="text-2xl mb-1">{b.emoji}</div>
-                    <div className="font-bold text-sm">{b.title}</div>
-                    <div className="text-blue-200 text-xs">{b.desc}</div>
+                  <div key={b.title} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 16, padding: 14 }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>{b.emoji}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{b.title}</div>
+                    <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{b.desc}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-3xl border border-gray-200 p-5">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Что сохранено в браузере</p>
-              <div className="space-y-2 text-sm text-gray-700">
-                <div className="flex items-start gap-2"><span>🔑</span><div><strong>aptogon_did</strong> — твой анонимный идентификатор</div></div>
-                <div className="flex items-start gap-2"><span>🔐</span><div><strong>aptogon_key</strong> — приватный ключ (только у тебя)</div></div>
-                <div className="flex items-start gap-2"><span>⛓️</span><div><strong>HumanCredential</strong> — подтверждение верификации</div></div>
+            {/* Stored keys */}
+            <div style={{
+              background: '#fff', borderRadius: 24, padding: 20,
+              border: '1px solid #e2e8f0', marginBottom: 16,
+            }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+                Что сохранено в браузере
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { icon: '🔑', key: 'aptogon_did', desc: 'твой анонимный идентификатор' },
+                  { icon: '🔐', key: 'aptogon_key', desc: 'приватный ключ (только у тебя)' },
+                  { icon: '⛓️', key: 'HumanCredential', desc: 'подтверждение верификации' },
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
+                    <span>{item.icon}</span>
+                    <div><strong>{item.key}</strong> — {item.desc}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Link href="/chat" className="flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-colors text-sm shadow-lg shadow-blue-100">
+            {/* Action buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Link href="/chat" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '16px 20px', background: 'linear-gradient(135deg,#2563eb,#60a5fa)',
+                color: '#fff', fontWeight: 900, fontSize: 14, borderRadius: 16,
+                textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.25)',
+              }}>
                 💬 Защищённый чат
               </Link>
-              <Link href="/bond" className="flex items-center justify-center gap-2 py-4 bg-white hover:bg-gray-50 text-indigo-600 font-black rounded-2xl border-2 border-indigo-200 hover:border-indigo-400 transition-colors text-sm">
+              <Link href="/bond" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '16px 20px', background: '#fff',
+                color: '#6366f1', fontWeight: 900, fontSize: 14, borderRadius: 16,
+                textDecoration: 'none', border: '2px solid rgba(99,102,241,0.3)',
+              }}>
                 🤝 Поручиться
               </Link>
             </div>
@@ -455,7 +642,8 @@ export default function VerifyPage() {
         )}
       </div>
 
-      <p className="text-center text-xs text-gray-400 pb-8">
+      {/* Footer note */}
+      <p style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', paddingBottom: 40 }}>
         🔒 Координаты уничтожаются в браузере · в сеть уходит только математика · без биометрии
       </p>
     </div>
