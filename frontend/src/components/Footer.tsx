@@ -33,36 +33,26 @@ export default function Footer() {
     }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
 
-        {/* Top row: logo + links */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 32, marginBottom: 32 }}>
+        {/* Main row: logo + nav links on same baseline */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
 
-          {/* Brand */}
-          <div>
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                <span style={{ color: '#f1f5f9' }}>APT</span>
-                <span style={{ color: '#06b6d4' }}>O</span>
-                <span style={{ background: 'linear-gradient(90deg,#7c3aed,#db2777)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GON</span>
-              </span>
-            </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, flexWrap: 'wrap' }}>
-              <p style={{ fontSize: 12, color: '#475569', margin: 0, lineHeight: 1.5 }}>
-                Human Firewall for the Internet
-              </p>
-              <p style={{ fontSize: 12, color: '#334155', margin: 0 }}>
-                © 2025–26 Homo Sapience Internet · Open Source · MIT License
-              </p>
-            </div>
-          </div>
+          {/* Logo only */}
+          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+              <span style={{ color: '#f1f5f9' }}>APT</span>
+              <span style={{ color: '#06b6d4' }}>O</span>
+              <span style={{ background: 'linear-gradient(90deg,#7c3aed,#db2777)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GON</span>
+            </span>
+          </Link>
 
-          {/* Nav links — one row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+          {/* Nav links — same row as logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
             {LINKS.map(l => (
               <Link key={l.href} href={l.href} style={{ color: l.color, fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85 }}>
                 {l.label}
               </Link>
             ))}
-            <span style={{ color: '#1e293b' }}>·</span>
+            <span style={{ color: '#334155' }}>·</span>
             <a href="https://t.me/aptogon" target="_blank" rel="noopener noreferrer"
               style={{ color: '#38bdf8', fontSize: 14, fontWeight: 600, textDecoration: 'none', opacity: 0.85, display: 'flex', alignItems: 'center', gap: 6 }}>
               <TelegramIcon /> Telegram
@@ -74,9 +64,13 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom divider + version */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 24, paddingTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-          <p style={{ fontSize: 12, color: '#1e293b', margin: 0 }}>
+        {/* Bottom row: tagline + copyright left, version right */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>Human Firewall for the Internet</p>
+            <p style={{ fontSize: 12, color: '#334155', margin: 0 }}>© 2025–26 Homo Sapience Internet · Open Source · MIT License</p>
+          </div>
+          <p style={{ fontSize: 12, color: '#334155', margin: 0, flexShrink: 0 }}>
             v0.2.0 · Gonka AI · Aptos Testnet
           </p>
         </div>
