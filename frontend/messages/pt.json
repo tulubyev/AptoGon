@@ -3,45 +3,30 @@
     "title": "HSI — Homo Sapience Internet",
     "description": "Prove que você é humano — com um gesto. Sem senha, sem e-mail, sem rastreamento."
   },
-  "nav": {
-    "back": "← APTOGON"
-  },
+  "nav": { "back": "← APTOGON" },
   "footer": {
-    "project": "Projeto",
-    "community": "Comunidade",
+    "project": "Projeto", "community": "Comunidade",
     "copyright": "© 2025 Homo Sapience Internet · Código Aberto · MIT License",
     "version": "v0.2.0 · Gonka AI · Aptos Testnet",
-    "links": {
-      "manifest": "Manifesto",
-      "developers": "Desenvolvedores",
-      "donate": "Doar",
-      "verify": "Verificar"
-    },
-    "social": {
-      "telegram": "✈️ Telegram",
-      "github": "⭐ GitHub"
-    }
+    "links": { "manifest": "Manifesto", "developers": "Desenvolvedores", "donate": "Doar", "verify": "Verificar" },
+    "social": { "telegram": "✈️ Telegram", "github": "⭐ GitHub" }
   },
   "home": {
     "badge": "v0.2.0 · Gonka AI · did:key · Aptos Testnet",
     "headline": "Firewall Humano para a Internet",
     "subheadline": "Prove que você é humano — com um gesto. Sem senha, sem e-mail, sem rastreamento.",
-    "cta_verify": "✍️ Verificar agora",
-    "cta_chat": "💬 Chat",
-    "tech_title": "Tecnologias",
-    "tech_subtitle": "Clique em um card para saber mais",
-    "how_title": "Como a verificação funciona",
-    "how_subtitle": "4 etapas · 10 segundos · zero dados pessoais",
-    "step": "Etapa",
-    "join_title": "Participe",
+    "cta_verify": "✍️ Verificar agora", "cta_chat": "💬 Chat",
+    "tech_title": "Tecnologias", "tech_subtitle": "Clique em um card para saber mais",
+    "how_title": "Como a verificação funciona", "how_subtitle": "4 etapas · 10 segundos · zero dados pessoais",
+    "step": "Etapa", "join_title": "Participe",
     "join_subtitle": "Estamos construindo infraestrutura pública para uma internet humana",
     "cards": {
       "gesture": { "title": "Gesto", "subtitle": "Expressão Humana", "modal_title": "O gesto como prova", "modal_body": "Você traça uma linha com o mouse ou o dedo. A IA analisa não a forma, mas os parâmetros biométricos do movimento: variabilidade de velocidade, pausas, correções, irregularidade do ritmo. Bots se movem perfeitamente — humanos não." },
       "ai": { "title": "Gonka AI", "subtitle": "Qwen3-14B", "modal_title": "Análise de padrões", "modal_body": "O Qwen3-14B (via OpenRouter) recebe apenas o vetor estatístico do gesto — sem coordenadas, sem dados pessoais. Avalia 8 parâmetros e retorna: is_human, confidence (0–1), reasoning. Limite: 85%." },
       "did": { "title": "DID:key", "subtitle": "Padrão W3C", "modal_title": "Identificador descentralizado", "modal_body": "Um par de chaves Ed25519 é gerado no navegador. A chave pública é codificada como did:key seguindo o padrão W3C. Sem servidores, sem cadastro — a chave existe apenas no localStorage do seu navegador." },
-      "aptos": { "title": "Aptos", "subtitle": "Blockchain", "modal_title": "Registro on-chain", "modal_body": "O hash SHA3-256 da prova (ExpressionProof) é gravado em um contrato inteligente Move na Aptos. O hash não contém dados pessoais — apenas estatísticas do gesto, session_id e um intervalo de 1 hora. Imutável e verificável." },
-      "privacy": { "title": "Privacidade", "subtitle": "Zero PII", "modal_title": "Zero dados pessoais", "modal_body": "As coordenadas brutas são processadas apenas no dispositivo. Somente o vetor estatístico (8 números) é enviado ao servidor. Somente o hash vai on-chain. Nenhum nome, e-mail ou IP é coletado ou armazenado." },
-      "bond": { "title": "HSI Bond", "subtitle": "Rede Humana", "modal_title": "Sistema de Vínculo Humano", "modal_body": "Humanos verificados podem atestar uns pelos outros via HSI Bond. Cada atestado fortalece o HumanCredential. Bots não podem receber atestados de pessoas reais — esta é uma camada adicional de proteção." }
+      "aptos": { "title": "Aptos", "subtitle": "Blockchain", "modal_title": "Registro on-chain", "modal_body": "O hash SHA3-256 da prova (ExpressionProof) é gravado em um contrato Move na Aptos. O hash não contém dados pessoais — apenas estatísticas do gesto, session_id e um intervalo de 1 hora. Imutável e verificável." },
+      "privacy": { "title": "Privacidade", "subtitle": "Zero PII", "modal_title": "Zero dados pessoais", "modal_body": "Coordenadas brutas são processadas apenas no dispositivo. Somente o vetor estatístico (8 números) é enviado ao servidor. Somente o hash vai on-chain. Nenhum nome, e-mail ou IP é coletado ou armazenado." },
+      "bond": { "title": "HSI Bond", "subtitle": "Rede Humana", "modal_title": "Sistema de Fiança Humana", "modal_body": "Humanos verificados podem atestar uns pelos outros via HSI Bond. Cada atestado fortalece o HumanCredential. Bots não podem receber atestados de pessoas reais — esta é uma camada adicional de proteção." }
     },
     "steps": {
       "s01": { "title": "Faça um gesto", "desc": "Uma linha ou forma na tela — velocidade, pausas, ritmo" },
@@ -49,46 +34,149 @@
       "s03": { "title": "DID gerado", "desc": "Chave Ed25519 no seu navegador — sem servidores" },
       "s04": { "title": "Registrado na Aptos", "desc": "Hash ExpressionProof — anônimo e permanente" }
     },
-    "manifest_card": {
-      "title": "Manifesto",
-      "body": "Por que estamos construindo o HSI, como ele vai mudar a internet e qual lugar cada humano terá nela.",
-      "cta": "Ler →"
-    },
-    "developers_card": {
-      "title": "Desenvolvedores",
-      "body": "REST API, SDK, exemplos de integração. Adicione verificação humana ao seu app em uma hora.",
-      "cta": "Docs →"
-    },
-    "donate_card": {
-      "title": "Apoio",
-      "body": "Um projeto aberto sem financiamento de risco. Ajude-nos a desenvolver infraestrutura pública.",
-      "cta": "Doar →"
-    }
+    "manifest_card": { "title": "Manifesto", "body": "Por que estamos construindo o HSI, como ele vai mudar a internet e qual lugar cada humano terá nela.", "cta": "Ler →" },
+    "developers_card": { "title": "Desenvolvedores", "body": "REST API, SDK, exemplos de integração. Adicione verificação humana ao seu app em uma hora.", "cta": "Docs →" },
+    "donate_card": { "title": "Apoio", "body": "Um projeto aberto sem financiamento de risco. Ajude-nos a desenvolver infraestrutura pública.", "cta": "Doar →" }
   },
   "manifest": {
-    "label": "homosapience.org",
-    "title": "Manifesto Homo Sapience",
-    "subtitle": "A internet foi construída por pessoas — para pessoas. É hora de protegê-la.",
+    "nav_label": "Manifesto", "hero_label": "homosapience.org",
+    "hero_title": "Manifesto Homo Sapience",
+    "hero_subtitle": "A internet foi construída por pessoas — para pessoas. É hora de protegê-la.",
+    "s1_title": "O Problema",
+    "s1_p1": "Em 2025, a maior parte do tráfego da internet não é gerado por humanos. Bots escrevem comentários, inflam votos, deixam avaliações, registram contas, participam de pesquisas. O espaço digital perdeu sua principal propriedade — deixou de ser humano.",
+    "s1_p2": "O problema é mais profundo do que parece. As soluções existentes — CAPTCHA, verificação por SMS, KYC — ou são facilmente contornadas ou exigem revelação de identidade. Não existe padrão aberto que permita provar humanidade anonimamente.",
+    "s1_p3": "Qualquer pessoa pode criar mil contas. Qualquer bot pode escrever 'Sou humano'. Nenhum serviço hoje pode verificar essa afirmação — sem passaporte, sem vigilância, sem banco de dados centralizado.",
+    "s2_title": "Solução: HSI como Protocolo",
+    "s2_p1": "O HSI (Homo Sapience Internet) não é um substituto para a internet. É um protocolo sobre o IP, como HTTPS sobre HTTP. Adiciona um novo primitivo: HumanCredential — uma prova criptograficamente verificada de que um humano vivo está por trás de uma ação.",
+    "s2_p2": "A verificação é baseada em biometria de movimento, não em identidade. A IA analisa o gesto — não coordenadas, não forma, mas estatísticas: variabilidade de velocidade, entropia de pausas, número de correções, irregularidade de ritmo. Isso é o que os bots não conseguem imitar bem o suficiente.",
+    "s2_how_label": "Como funciona",
+    "s2_steps": [
+      "Usuário faz um gesto → estatísticas processadas no dispositivo",
+      "Vetor anônimo (sem coordenadas) enviado ao Gonka AI",
+      "Resultado: is_human + confidence — sem dados pessoais",
+      "No sucesso, DID Ed25519 é gerado no navegador",
+      "Hash SHA3-256 da prova gravado na Aptos"
+    ],
+    "s3_title": "Aplicações Práticas",
+    "apps": [
+      { "icon": "🌐", "title": "Fóruns e Plataformas", "desc": "SDK integra em 2 linhas de código. O spam desaparece — não porque está bloqueado, mas porque não há ninguém para escrevê-lo." },
+      { "icon": "🗳️", "title": "DAO e Votação", "desc": "Um humano, um voto. Sem ataques Sybil, sem fraude eleitoral. Tokens de governança protegidos por prova de humanidade." },
+      { "icon": "💬", "title": "Chats e Comentários", "desc": "Um badge de Human verificado aparece para pessoas reais. A qualidade das discussões muda instantaneamente — não por censura, mas por confiança na fonte." },
+      { "icon": "🛒", "title": "Marketplaces", "desc": "As avaliações são deixadas por compradores reais, não por bots de concorrentes. As classificações funcionam novamente como indicador de qualidade." },
+      { "icon": "🎓", "title": "Educação", "desc": "O exame foi feito por um humano, não pelo GPT. Um diploma online faz sentido quando há prova de quem o obteve." },
+      { "icon": "🤖", "title": "Agentes de IA", "desc": "Paradoxo: o HSI ajuda agentes de IA a agir corretamente. Um agente pode provar que age em nome de um humano verificado — com sua permissão explícita." }
+    ],
+    "s4_title": "Monetização e Sustentabilidade",
+    "s4_p1": "O HSI existe como protocolo aberto com vários níveis. A verificação para humanos é sempre gratuita. Este é um princípio: um humano não deve pagar para provar sua humanidade.",
+    "tiers": [
+      { "title": "Gratuito", "sub": "para humanos", "icon": "👤" },
+      { "title": "SaaS API", "sub": "para plataformas", "icon": "🔌" },
+      { "title": "Enterprise", "sub": "SDK on-premise", "icon": "🏢" },
+      { "title": "Token GNK", "sub": "governança", "icon": "🪙" }
+    ],
+    "s4_p2": "As plataformas pagam pela verificação de seus usuários — assim como pagam pelo reCAPTCHA e detecção de fraudes, mas de forma mais honesta, transparente e sem compartilhar dados com terceiros.",
+    "s5_title": "Crescendo a Comunidade",
+    "s5_p1": "Os primeiros adotantes são comunidades que já sofrem com bots. Desenvolvedores no GitHub, autores no Reddit, membros de DAO no Web3, moderadores de fóruns. Para eles, a verificação não é uma barreira — é um privilégio.",
+    "s5_p2": "O badge Verified Human no perfil é o novo selo azul que não pode ser comprado. Não pode ser falsificado ou transferido. Prova não fama — mas existência.",
+    "s5_p3": "A rede cresce através do HSI Bond: humanos verificados podem atestar uns pelos outros, fortalecendo sua credencial. A confiança social torna-se criptograficamente verificável.",
     "quote": "\"A internet não está quebrada — ela simplesmente não sabe quem você é. APTOGON resolve isso.\"",
-    "cta_verify": "✍️ Verificar",
-    "cta_developers": "⚡ Desenvolvedores",
-    "nav_label": "Manifesto"
+    "cta_verify": "✍️ Verificar", "cta_telegram": "✈️ Telegram", "cta_developers": "⚡ Desenvolvedores", "cta_home": "← Início"
   },
   "developers": {
-    "title": "Para Desenvolvedores",
-    "nav_label": "Desenvolvedores"
+    "nav_label": "Desenvolvedores", "hero_title": "Para Desenvolvedores",
+    "hero_subtitle": "Adicione verificação humana ao seu app. REST API compatível com qualquer stack.",
+    "quickstart_title": "Início Rápido", "quickstart_subtitle": "Integração mínima — 3 passos",
+    "step1_title": "Incorporar GestureCanvas", "step2_title": "Enviar gesto para verificação", "step3_title": "Usar HumanCredential",
+    "api_title": "Referência da API",
+    "ep1_desc": "Verificação de gesto. Retorna HumanCredential.", "ep1_params": "events[] · session_id", "ep1_returns": "passed · confidence · did · expression_proof · tx_hash",
+    "ep2_desc": "Status de verificação por DID.", "ep2_params": "did (query)", "ep2_returns": "is_human · valid_until · bond_count",
+    "ep3_desc": "Últimas tentativas de verificação (para depuração).", "ep3_params": "last=20 (query)", "ep3_returns": "attempts[] com padrão de gesto e resultado AI",
+    "ep4_desc": "Criar DID sem verificação (para testes).", "ep4_params": "—", "ep4_returns": "did · private_key_b64",
+    "features_title": "Recursos",
+    "features": [
+      { "icon": "🔐", "title": "Zero PII", "desc": "Coordenadas brutas do gesto nunca saem do navegador. Apenas estatísticas vão ao servidor." },
+      { "icon": "🌐", "title": "W3C DID", "desc": "Compatível com o padrão did:key. Funciona com qualquer sistema de identidade." },
+      { "icon": "⛓️", "title": "On-chain proof", "desc": "Contrato Move na Aptos. Verificação sem nosso servidor — totalmente descentralizado." },
+      { "icon": "♿", "title": "Acessibilidade", "desc": "Considera deficiências motoras. Pessoas com tremor nunca são bloqueadas." },
+      { "icon": "⚡", "title": "Rápido", "desc": "Mediana 800ms. Gonka AI com fallback — funciona mesmo quando o serviço está indisponível." },
+      { "icon": "📋", "title": "Verifiable Credential", "desc": "Formato W3C VC. Assinado com Ed25519. Expira em 30 dias, renovado automaticamente." }
+    ],
+    "cta_title": "Pronto para integrar?", "cta_subtitle": "Entre em contato — configuramos uma chave API e ajudamos com a integração",
+    "cta_email": "📩 Fale conosco", "cta_try": "🧪 Testar ao vivo", "cta_home": "← Início"
   },
   "donate": {
-    "title": "Apoie o Projeto",
-    "nav_label": "Doar"
+    "nav_label": "Doar", "hero_title": "Apoie o Projeto",
+    "hero_subtitle": "APTOGON é um projeto aberto sem financiamento de risco. Estamos construindo infraestrutura pública para uma internet humana.",
+    "funds_title": "Para onde vão os fundos",
+    "funds": [
+      { "icon": "🧠", "title": "Inferência Gonka AI", "desc": "Pagamento por solicitações Qwen3-14B via OpenRouter para análise de gestos", "pct": 45 },
+      { "icon": "🖥️", "title": "Hospedagem e infraestrutura", "desc": "Backend FastAPI, transações Aptos, CDN para frontend", "pct": 30 },
+      { "icon": "👩‍💻", "title": "Desenvolvimento", "desc": "SDK, documentação, novos recursos de verificação", "pct": 25 }
+    ],
+    "tiers_title": "Níveis de apoio",
+    "tiers": [
+      { "amount": "$5", "label": "Café", "desc": "~2.500 verificações", "icon": "☕" },
+      { "amount": "$20", "label": "Apoiador", "desc": "~10.000 verificações", "icon": "🌱" },
+      { "amount": "$100", "label": "Parceiro", "desc": "Nome nos colaboradores + API prioritária", "icon": "⭐" },
+      { "amount": "$500", "label": "Patrocinador", "desc": "Logo no site + suporte direto", "icon": "🏆" }
+    ],
+    "russia_title": "Pagamento da Rússia",
+    "russia_desc": "Transferência rápida via Tinkoff Pay, SBP ou qualquer cartão bancário russo",
+    "crypto_title": "Criptomoeda",
+    "crypto_eth_desc": "Escreva para hello@homosapience.org — enviaremos o endereço",
+    "contact_title": "Quer parceria ou integração?",
+    "contact_desc": "Discutiremos os termos, forneceremos acesso antecipado à API e ajudaremos a integrar a verificação ao seu produto",
+    "cta_telegram": "✈️ Telegram @aptogon", "cta_email": "📩 hello@homosapience.org", "cta_home": "← Início"
   },
   "verify": {
-    "nav_label": "Verificar"
+    "nav_label": "Verificar", "hero_badge": "🛡️ Gonka AI · Aptos Testnet",
+    "hero_title": "Prove que você é", "hero_human": "humano",
+    "hero_subtitle": "Sem passaporte · Sem câmera · Sem dados pessoais",
+    "steps_label": "Como a verificação funciona",
+    "steps": [
+      { "num": "1", "title": "Desenhe um símbolo", "desc": "Qualquer coisa — uma letra, número, espiral. A IA observa como você desenha, não o quê" },
+      { "num": "2", "title": "Gonka AI", "desc": "Analisa ritmo, velocidade, pausas. Bots se movem suavemente demais — isso os denuncia" },
+      { "num": "3", "title": "Seu DID", "desc": "Uma chave digital é criada no seu navegador. Seu ID anônimo — como um passaporte sem nome" },
+      { "num": "4", "title": "Aptos", "desc": "O fato de verificação é gravado na blockchain. Não dados — apenas uma prova criptográfica" }
+    ],
+    "canvas_title": "Desenhe algo", "canvas_subtitle": "com mouse ou dedo — qualquer símbolo",
+    "tags": ["ritmo", "velocidade", "pausas", "pressão", "correções"],
+    "analyzing_title": "Gonka AI está analisando...", "analyzing_subtitle": "O modelo está estudando o padrão do seu gesto",
+    "analyzing_checks": ["Variabilidade de velocidade", "Entropia de pausas", "Número de correções", "Irregularidade de ritmo", "Geração de ExpressionProof"],
+    "success_title": "Você é humano ✓", "success_subtitle": "Gonka AI confirmou a verificação",
+    "confidence_label": "Confiança da IA", "threshold_0": "0%", "threshold_70": "limite 70%", "threshold_85": "85%+ excelente", "threshold_100": "100%",
+    "did_title": "Seu ID digital criado", "did_subtitle": "W3C did:key — padrão internacional",
+    "did_id_label": "Identificador (DID):", "did_what_label": "O que é?", "did_what_value": "Como um passaporte, mas digital e completamente anônimo",
+    "did_where_label": "Onde armazenado?", "did_where_value": "Apenas no seu navegador (localStorage). Em nenhum servidor",
+    "did_key_label": "Chave privada", "did_key_value": "Somente sua. Ninguém pode usá-la",
+    "did_gen_label": "Gerado", "did_gen_value": "No próprio navegador, em 1ms, sem requisição ao servidor",
+    "aptos_title": "Registro na blockchain Aptos", "aptos_onchain": "on-chain ✓", "aptos_local": "armazenamento local",
+    "aptos_tx_label": "Hash da transação:", "aptos_no_key": "Credential salvo localmente. Adicione APTOS_PRIVATE_KEY para registro on-chain.",
+    "aptos_note": "📌 Apenas o fato da verificação é registrado on-chain — sem dados pessoais, apenas um hash",
+    "bond_title": "Último passo — fiança", "bond_subtitle": "3 humanos verificados confirmam você",
+    "bond_desc": "Isso protege contra bots que passaram no teste de gesto. Os fiadores são pessoas reais da rede HSI que garantem com sua reputação.",
+    "bond_cta": "🤝 Solicitar fiança →",
+    "bonding_title": "Aguardando fiadores...", "bonding_subtitle": "Gonka BondMatcher está selecionando pessoas por reputação na rede",
+    "bonding_vouched": "Afiançou", "bonding_waiting": "...", "bonding_progress": "de 3",
+    "complete_title": "Verificação concluída!", "complete_subtitle": "Você é um membro pleno da rede HSI",
+    "complete_cards": [
+      { "emoji": "🧠", "title": "Gonka AI", "desc": "gesto verificado" },
+      { "emoji": "🔑", "title": "DID criado", "desc": "no navegador" },
+      { "emoji": "⛓️", "title": "Aptos", "desc": "fato registrado" }
+    ],
+    "stored_title": "O que está salvo no navegador",
+    "stored_items": [
+      { "icon": "🔑", "key": "aptogon_did", "desc": "seu identificador anônimo" },
+      { "icon": "🔐", "key": "aptogon_key", "desc": "chave privada (somente sua)" },
+      { "icon": "⛓️", "key": "HumanCredential", "desc": "confirmação de verificação" }
+    ],
+    "cta_chat": "💬 Chat seguro", "cta_bond": "🤝 Ser fiador",
+    "failed_title": "Não passou",
+    "failed_tip": "💡 Dica: desenhe por mais tempo (1–3 seg), faça pausas entre os pontos — a irregularidade do ritmo indica um humano",
+    "fallback_label": "(fallback)", "debug_title": "🔬 Dados do padrão (depuração)",
+    "error_backend": "Backend indisponível",
+    "footer_note": "🔒 Coordenadas destruídas no navegador · apenas matemática vai à rede · sem biometria"
   },
-  "chat": {
-    "nav_label": "Chat"
-  },
-  "lang_switcher": {
-    "label": "Idioma"
-  }
+  "chat": { "nav_label": "Chat" },
+  "lang_switcher": { "label": "Idioma" }
 }
