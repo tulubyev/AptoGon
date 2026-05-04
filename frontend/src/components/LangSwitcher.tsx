@@ -1,6 +1,6 @@
 'use client'
 import { useLocale } from 'next-intl'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
 
 const LANGS = [
@@ -26,10 +26,7 @@ export default function LangSwitcher() {
   const current = LANGS.find(l => l.code === locale) || LANGS[0]
 
   const switchLocale = (code: string) => {
-    // Replace current locale prefix in pathname
-    const segments = pathname.split('/')
-    segments[1] = code
-    router.push(segments.join('/'))
+    router.replace(pathname, { locale: code })
     setOpen(false)
   }
 
@@ -58,16 +55,15 @@ export default function LangSwitcher() {
 
       {open && (
         <>
-          {/* backdrop */}
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 99 }}
             onClick={() => setOpen(false)}
           />
           <div style={{
             position: 'absolute',
-            bottom: '100%',
+            top: '100%',
             right: 0,
-            marginBottom: 8,
+            marginTop: 8,
             background: '#1e293b',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12,

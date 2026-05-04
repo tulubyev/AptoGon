@@ -69,10 +69,11 @@ export default function Header() {
                 fontSize: 13,
                 fontWeight: 600,
                 textDecoration: 'none',
-                color: isActive ? link.color : '#64748b',
+                color: link.color,
                 background: isActive ? link.activeBg : 'transparent',
                 border: `1px solid ${isActive ? link.activeBorder : 'transparent'}`,
-                transition: 'color 0.15s, background 0.15s',
+                opacity: isActive ? 1 : 0.7,
+                transition: 'opacity 0.15s, background 0.15s',
               }}
             >
               {link.label}
