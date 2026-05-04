@@ -21,6 +21,134 @@ interface BondStatus {
   tx_hash?: string
 }
 
+// ── Trust Score Algorithm explanation ─────────────────────────────────────────
+
+const TRUST_LEVELS = [
+  { bonds: 0,  score: 0.1, label: 'Новичок',             color: '#64748b', bar: 10,  icon: '🌱' },
+  { bonds: 1,  score: 0.2, label: '',                     color: '#64748b', bar: 20,  icon: '' },
+  { bonds: 2,  score: 0.3, label: '',                     color: '#64748b', bar: 30,  icon: '' },
+  { bonds: 3,  score: 0.5, label: 'Признан сообществом', color: '#0891b2', bar: 50,  icon: '✅' },
+  { bonds: 4,  score: 0.6, label: '',                     color: '#0891b2', bar: 60,  icon: '' },
+  { bonds: 5,  score: 0.7, label: '',                     color: '#7c3aed', bar: 70,  icon: '' },
+  { bonds: 6,  score: 0.8, label: '',                     color: '#7c3aed', bar: 80,  icon: '' },
+  { bonds: '7+', score: 1.0, label: 'Доверенный',         color: '#059669', bar: 100, icon: '🏆' },
+]
+
+const PENALTY_ROWS = [
+  { event: 'Бот обнаружен среди тех, за кого вы ручались', delta: '−0.1', color: '#ef4444' },
+  { event: 'Повторное обнаружение бота (один и тот же поручитель)', delta: '−0.2', color: '#ef4444' },
+  { event: 'Новое успешное поручительство', delta: '+0.1', color: '#22c55e' },
+  { event: 'Поручитель сам достиг trust_score 1.0', delta: '+0.05 бонус', color: '#a78bfa' },
+]
+
+function TrustScoreInfo() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+
+      {/* Collapsed summary bar */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: open ? '14px 14px 0 0' : 14, padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', color: '#fff', transition: 'border-radius 0.2s' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>🛡️</span>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Как работает Trust Score и риски поручителя</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>Алгоритм начисления и штрафы за ботов</div>
+          </div>
+        </div>
+        <span style={{ color: '#475569', fontSize: '1.1rem', transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }}>▾</span>
+      </button>
+
+      {open && (
+        <div style={{ background: '#0f172a', border: '1px solid #334155', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '20px 20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Algorithm */}
+          <div>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '0.95rem', marginBottom: 12, marginTop: 0 }}>
+              📈 Алгоритм роста Trust Score
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {TRUST_LEVELS.filter(l => l.label).map(l => (
+                <div key={String(l.bonds)} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', flexShrink: 0 }}>
+                    {l.bonds}
+                  </div>
+                  <div style={{ flex: 1, height: 8, background: '#1e293b', borderRadius: 99, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${l.bar}%`, background: `linear-gradient(90deg, #334155, ${l.color})`, borderRadius: 99 }} />
+                  </div>
+                  <div style={{ width: 36, textAlign: 'right', fontWeight: 800, fontSize: '0.85rem', color: l.color, flexShrink: 0 }}>
+                    {Math.round(l.score * 100)}%
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 160 }}>
+                    {l.icon && <span style={{ fontSize: 14 }}>{l.icon}</span>}
+                    <span style={{ fontSize: '0.78rem', color: l.color, fontWeight: l.label ? 700 : 400 }}>{l.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: '#475569', fontSize: '0.75rem', marginTop: 10, marginBottom: 0 }}>
+              Порог для права самому стать поручителем: <strong style={{ color: '#0891b2' }}>trust_score ≥ 0.5</strong> (3+ bonds)
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid #1e293b' }} />
+
+          {/* Risk table */}
+          <div>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '0.95rem', marginBottom: 4, marginTop: 0 }}>
+              ⚠️ Риски снижения Trust Score
+            </h3>
+            <p style={{ color: '#64748b', fontSize: '0.78rem', marginBottom: 12, marginTop: 0 }}>
+              Поручитель рискует своей репутацией. Это экономический стимул поручаться только за реальных людей.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {PENALTY_ROWS.map(row => (
+                <div key={row.event} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1e293b', borderRadius: 10, padding: '10px 14px' }}>
+                  <span style={{ fontWeight: 900, fontSize: '0.9rem', color: row.color, flexShrink: 0, minWidth: 72, fontFamily: 'monospace' }}>
+                    {row.delta}
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{row.event}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid #1e293b' }} />
+
+          {/* How guarantors are identified */}
+          <div>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '0.95rem', marginBottom: 4, marginTop: 0 }}>
+              🔍 Как поручители находят друг друга без деанонимизации
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { icon: '🔑', title: 'Идентификатор', body: 'Только DID (did:key:z6Mk...) — публичный ключ Ed25519. Никакого имени, email, IP.' },
+                { icon: '📊', title: 'Репутация из блокчейна', body: 'trust_score, bond_count, дата последней активности — всё хранится в Aptos on-chain и верифицируемо без доверия к серверу.' },
+                { icon: '🤖', title: 'Gonka BondMatcher', body: 'AI выбирает 10 кандидатов из пула по репутации, активности и разнообразию графа. Ни геолокация, ни язык, ни демография не используются.' },
+                { icon: '⚖️', title: 'Почему это работает', body: 'Доверие строится на истории действий, а не на личности. DID = анонимный паспорт с криптоподтверждённой репутацией.' },
+              ].map(item => (
+                <div key={item.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#e2e8f0', fontSize: '0.83rem' }}>{item.title}</div>
+                    <div style={{ color: '#64748b', fontSize: '0.78rem', lineHeight: 1.5, marginTop: 2 }}>{item.body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function BondPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -255,6 +383,9 @@ export default function BondPage() {
             Выбери <strong style={{ color: '#fff' }}>10+ человек</strong> для запроса (нужно 3 согласия)
           </p>
         </div>
+
+        {/* ── Trust Score Info ─────────────────────────────────────────────── */}
+        <TrustScoreInfo />
 
         {error && (
           <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: 10, padding: '12px 16px', marginBottom: 16, color: '#fca5a5', fontSize: '0.85rem' }}>
